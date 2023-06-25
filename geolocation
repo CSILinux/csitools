@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+##Geolocation App from CSI Linux by CSI Linux v2021.3.4.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Social Media Search App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+	yad --borders=10 --height=300 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="Geolocation of devices" \
+	--form --center \
+	--image /opt/csitools/Images/geolocation.png \
+	--field="Wireless SSID - Name of Access Point.  Example:linksys":fbtn "bash -c _wifissid" \
+	--field="Wireless BSSID - MAC Address.  Example:42:42:42:42:42:42":fbtn "bash -c _wifibssid" \
+	--field="IP Address - ISP Registered Geolocation Address.":fbtn "bash -c _geolocationip1" \
+	--button="Exit:1"
+	echo $test
+}
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _wifissid _wifibssid _geolocationip1 _geolocatebySE
+
+StartCase "$1"
+echo "Case=$cases"
+Menu

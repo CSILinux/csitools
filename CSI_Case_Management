@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+##CSI Cases Menu Script by CSI Linux v2021.1.24.5
+##tools@csilinux.com - Jeremy Martin - infosecwriter
+
+#define choices
+opt1="Manage APIs in certain applications"
+opt2="Move Cases Folder"
+opt3="Edit Agency Information"
+opt99="Exit"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+fqdnregex="\b((xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b"
+
+source /opt/csitools/sharedfunctions
+
+Menu () {
+csimenu=$(zenity --list --title "CSI Case Management Menu" --text "The CSI Case Management System allows you to manage the case or run\ninvestigation tools.  What would you like to do?" --width=350 --height=250 --radiolist \
+	--column "Pick" --column "Option" \
+	TRUE "$opt1" \
+	FALSE "$opt2" \
+	FALSE "$opt3" \
+	FALSE "$opt99" \
+	2> >(grep -v 'GtkDialog' >&2)) 
+
+echo "Pick your option to run..."
+_stopwatch; echo "$stopwatch: CSI Case Management Menu." >> ~/Cases/$cases/audit.log
+case $csimenu in			
+	
+	$opt1 ) #Manage APIs
+		#Run Tool
+		/opt/csitools/manageapis
+		Menu
+	;;
+	
+	$opt2 ) #Move the Cases folder
+		#Run Tool
+		/opt/csitools/managecasefolder
+		Menu
+	;;
+		
+	$opt3 ) #Edit the variables for the Report Generator the Cases folder
+		#Run Tool
+		gedit /opt/csitools/startcsiconfig &
+		Menu
+	;;
+		
+	$opt99 ) #Exit
+		if ! which wmctrl > /dev/null; then
+		   sudo apt-get install wmctrl
+		fi
+		wmctrl -r "Terminal" -b add,shaded
+		exit
+	;;
+	*) echo "$0: unknown option specified: " >&2
+	exit
+esac
+		wmctrl -r "Terminal" -b add,shaded
+		exit
+}
+
+trap finish EXIT
+
+Menu
+

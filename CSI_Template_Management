@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+##CSI Template Management App from CSI Linux by CSI Linux v2021.9.5.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the CSI Template Management App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+_stopwatch
+_stopwatch; echo "$stopwatch: CSI Template Management Menu." >> ~/Cases/$cases/audit.log
+
+if ! which yad > /dev/null; then
+	key=$(zenity --password --title "Enter you SUDO password." --text "Enter you SUDO password." --width 400)
+	echo $key | sudo -S apt-get install yad
+fi
+	
+Menu() {
+	yad --borders=10 --height=250 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="Template Management" \
+	--form --center \
+	--image /opt/csitools/Images/document-templates.jpeg \
+	--field="Consent to Search":fbtn "bash -c _consenttosearch" \
+	--field="Non-Disclosure Agreement (NDA)":fbtn "bash -c _nda" \
+	--field="Chain of Custody":fbtn "bash -c _CoC" \
+	--field="Preservation Letter":fbtn "bash -c _PresL" \
+	--field="Mutual Legal Assistance Treaty (MLAT) (Coming Soon)":fbtn "bash -c _MLAT" \
+	--field="Investigation Reports":fbtn "bash -c _reportgen" \
+	--field="DMCA Takedown Notice":fbtn "bash -c _DMCA" \
+	--field="Missing Persons Poster":fbtn "bash -c _MISSINGPERSONS" \
+	--button="Exit:1"
+	echo $test
+}
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _reportgen _DMCA _MLAT _PresL _CoC _nda _stopwatch _MISSINGPERSONS _consenttosearch
+
+StartCase "$1"
+echo "Case=$cases"
+Menu

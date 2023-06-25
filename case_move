@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Script for moving the case folder structure and environment for CSI Linux
+
+source /opt/csitools/sharedfunctions
+
+ChangeCase() {
+	printf "Moving the case environment\n"
+	_stopwatch; echo "$stopwatch: Moving Case Folder to $1" >> ~/Cases/audit.log
+	if [ ! -d "~/Cases" ]; then
+	(
+		mkdir ~/Cases 2>/dev/null
+		echo "Creating Cases folder"
+	)
+	fi
+	mv ~/Cases $1
+	echo "Moving Cases folder"
+	ln -s $1 ~/Cases
+	echo "Linking to Cases folder"
+	thunar ~/Cases
+}
+
+finish() {
+	echo "Case Folder Moved"
+}
+trap finish EXIT
+
+ChangeCase $1
+

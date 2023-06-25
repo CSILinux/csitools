@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+##OSINT App from CSI Linux by CSI Linux v2022.9.3.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Online Investigation / OSINT App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+	yad --borders=10 --window-icon="/opt/csitools/Images/osint.jpeg" --title="OSINT Tools" \
+	--form --center \
+	--image /opt/csitools/Images/Icons/t_96.png --width=400 \
+	--field="Domains and Websites":fbtn "bash -c '/opt/csitools/domains_ng $cases'" \
+	--field="Geolocation IP/SSID/BSSID":fbtn "bash -c '/opt/csitools/geolocation $cases'" \
+	--field="Social Media (SOCMINT)":fbtn "bash -c '/opt/csitools/social_media_ng $cases'" \
+	--field="Capture Video":fbtn "bash -c '/opt/csitools/videocapture-GUI $cases'" \
+	--field="Dark Web Investigations":fbtn "bash -c '/opt/csitools/darkweb_ng $cases'" \
+	--button="Exit:1"
+	echo $test
+}
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+	trap finish EXIT
+fi
+
+export -f _stopwatch StartCase _directip
+StartCase "$1"
+source ~/Cases/$cases/caseinfo.txt
+echo "Case=$cases"
+Menu

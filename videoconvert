@@ -1,0 +1,35 @@
+#!/bin/bash
+# convert video
+
+source /opt/csitools/sharedfunctions
+
+StartCase
+
+if [ $# -ne 1 ]; then
+	FILE=`zenity --file-selection --title="Select a File to convert"`
+	filename=$(basename -- "$FILE")
+	filename="${filename%.*}"
+	case $? in
+		 0)
+		        echo "\"$FILE\" selected."
+			ffmpeg -i $FILE ~/Cases/$cases/Export/$filename.mp4
+			;;
+		 1)
+		        echo "No file selected.";;
+		-1)
+		        echo "An unexpected error has occurred.";;
+	esac
+else
+	filename=$(basename -- "$2")
+	filename="${filename%.*}"
+	ffmpeg -i $2 ~/Cases/$1/Export/$filename.mp4
+	exit 1
+fi
+
+vlc ~/Cases/$cases/Export/$filename.mp4 &
+
+
+
+
+
+

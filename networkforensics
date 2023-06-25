@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+##Computer Forensic Tools App from CSI Linux by CSI Linux v2022.8.30.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Computer Forensics App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+	yad  --borders=10 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="Network Forensics / Incident Response" \
+	--form --center \
+	--image /opt/csitools/Images/Icons/Tex_skill_60.PNG --width=300 \
+	--field="Document Templates":fbtn "bash -c /opt/csitools/CSI_Template_Management" \
+	--field="Network Authorization":fbtn "bash -c _na" \
+	--field="Chain of Custody Template":fbtn "bash -c _CoC" \
+	--field="Record the Desktop":fbtn "bash -c _voko" \
+	--field="CSI SIEM":fbtn "bash -c /opt/csitools/CSI_SIEM" \
+	--field="Wireshark Packet Capture":fbtn "bash -c wireshark" \
+	--field="Bettercap":fbtn "xterm -e bash-wrapper bettercap --help" \
+	--field="Network Miner":fbtn "bash -c 'mono /opt/NetworkMiner/NetworkMiner.exe'" \
+	--field="Volatility":fbtn "xterm -e bash-wrapper /opt/volatility3/vol.py" \
+	--field="Autotimeliner":fbtn "bash -c _autl" \
+	--field="Report Template":fbtn "bash -c _report" \
+	--button="Exit:1"
+
+}
+
+_fimage() {
+	bash-wrapper /opt/csitools/helper/guymagerrun
+}
+
+_autl() {
+	bash-wrapper /opt/csitools/helper/autotimelinerrun $cases
+}
+
+_na() {
+	#Run Tool
+	source /opt/csitools/startcsiconfig
+	source ~/Cases/$cases/caseinfo.txt
+	rm -rf ~/Cases/$cases/Report/*
+	mkdir ~/Cases/$cases/Report
+	cd ~/Cases/$cases/Report
+	template="/home/csi/Documents/Templates/Network-Authorization.odt"
+	unzip $template
+	sed -i "s/&lt;Case Type&gt;/$casetype/g" meta.xml 
+	sed -i "s/&lt;Case&gt;/$cases/g" meta.xml 
+	sed -i "s/&lt;Client&gt;/$client/g" meta.xml
+	sed -i "s/&lt;Client Address&gt;/$clientaddy/g" meta.xml
+	sed -i "s/&lt;Client City&gt;/$clientcity/g" meta.xml
+	sed -i "s/&lt;Client State&gt;/$clientstate/g" meta.xml
+	sed -i "s/&lt;Client Zip&gt;/$clientzip/g" meta.xml
+	sed -i "s/&lt;Client Phone&gt;/$clientphone/g" meta.xml
+	sed -i "s/&lt;Suspect&gt;/$suspect/g" meta.xml
+	sed -i "s/&lt;Investigator&gt;/$investigator/g" meta.xml
+	sed -i "s/&lt;Agency Name&gt;/$AgencyName/g" meta.xml
+	sed -i "s/&lt;Agency Address&gt;/$AgencyAddress1/g" meta.xml 
+	sed -i "s/&lt;Agency City&gt;/$AgencyCity/g" meta.xml 
+	sed -i "s/&lt;Agency State&gt;/$AgencyState/g" meta.xml 
+	sed -i "s/&lt;Agency Country&gt;/$AgencyCountry/g" meta.xml 
+	sed -i "s/&lt;Agency Zip&gt;/$AgencyZip/g" meta.xml 
+	sed -i "s/&lt;Agency Phone&gt;/$AgencyPhone/g" meta.xml 
+	sed -i "s/&lt;Agency Email&gt;/$AgencyEmail/g" meta.xml 
+	sed -i "s/&lt;Agency Website&gt;/$AgencyWebsite/g" meta.xml
+	sed -i "s/&lt;Agency Tagline&gt;/$AgencyTagline/g" meta.xml
+	sed -i "s/&lt;Agency Classification&gt;/$AgencyClassification/g" meta.xml
+	cp $AgencyLogo Pictures/1000020100000173000001A8327B8009BAB2AE4D.png
+	zip -r "Report for $cases.odt" *
+	libreoffice "Network Authorization - $cases.odt" &
+}
+
+_report() {
+	#Run Tool
+	source /opt/csitools/startcsiconfig
+	source ~/Cases/$cases/caseinfo.txt
+	rm -rf ~/Cases/$cases/Report/*
+	mkdir ~/Cases/$cases/Report
+	cd ~/Cases/$cases/Report
+	template="/home/csi/Documents/Templates/Forensic-investigation-report-template.odt"
+	unzip $template
+	sed -i "s/&lt;Case Type&gt;/$casetype/g" meta.xml 
+	sed -i "s/&lt;Case&gt;/$cases/g" meta.xml 
+	sed -i "s/&lt;Client&gt;/$client/g" meta.xml
+	sed -i "s/&lt;Client Address&gt;/$clientaddy/g" meta.xml
+	sed -i "s/&lt;Client City&gt;/$clientcity/g" meta.xml
+	sed -i "s/&lt;Client State&gt;/$clientstate/g" meta.xml
+	sed -i "s/&lt;Client Zip&gt;/$clientzip/g" meta.xml
+	sed -i "s/&lt;Client Phone&gt;/$clientphone/g" meta.xml
+	sed -i "s/&lt;Suspect&gt;/$suspect/g" meta.xml
+	sed -i "s/&lt;Investigator&gt;/$investigator/g" meta.xml
+	sed -i "s/&lt;Agency Name&gt;/$AgencyName/g" meta.xml
+	sed -i "s/&lt;Agency Address&gt;/$AgencyAddress1/g" meta.xml 
+	sed -i "s/&lt;Agency City&gt;/$AgencyCity/g" meta.xml 
+	sed -i "s/&lt;Agency State&gt;/$AgencyState/g" meta.xml 
+	sed -i "s/&lt;Agency Country&gt;/$AgencyCountry/g" meta.xml 
+	sed -i "s/&lt;Agency Zip&gt;/$AgencyZip/g" meta.xml 
+	sed -i "s/&lt;Agency Phone&gt;/$AgencyPhone/g" meta.xml 
+	sed -i "s/&lt;Agency Email&gt;/$AgencyEmail/g" meta.xml 
+	sed -i "s/&lt;Agency Website&gt;/$AgencyWebsite/g" meta.xml
+	sed -i "s/&lt;Agency Tagline&gt;/$AgencyTagline/g" meta.xml
+	sed -i "s/&lt;Agency Classification&gt;/$AgencyClassification/g" meta.xml
+	cp $AgencyLogo Pictures/1000020100000173000001A8327B8009BAB2AE4D.png
+	zip -r "Report for $cases.odt" *
+	libreoffice "Report for $cases.odt" &
+}
+
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _stopwatch StartCase _directip StartCase _report _bettercap _fimage _na _autl
+
+StartCase "$1"
+echo "Case=$cases"
+Menu "$1"

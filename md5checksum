@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for i in "$@"; do
+case "${i}" in
+	*)
+	o=`md5sum "${i}"`
+	yad --title="MD5 CheckSum Calculator" --form --field="" "$o" --no-buttons --geometry=550x50+500+0
+	;;
+esac
+done

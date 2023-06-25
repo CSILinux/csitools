@@ -1,0 +1,45 @@
+#!/bin/bash
+# getbtcaddr--Given a Bitcoin address, reports useful information
+# requires wcalc
+# requires Internet access
+
+_vars() {
+	base_url="https://blockchain.info/q/"
+	balance=$(curl -s $base_url"addressbalance/"$1)
+	recv=$(curl -s $base_url"getreceivedbyaddress/"$1)
+	sent=$(curl -s $base_url"getsentbyaddress/"$1)
+	first_made=$(curl -s $base_url"addressfirstseen/"$1)
+	recvbc=$(echo $recv / 10000000 | wcalc)
+	sentbc=$(echo $sent / 10000000 | wcalc)
+	echo "Details for address $1" | tee $1.txt
+	echo "The values are shown as Satoshis (1 Satoshis = .00000001 BTC)" | tee -a $1.txt
+	echo -e "\tFirst seen:      "$(date -d @$first_made) | tee -a $1.txt
+	echo -e "\tCurrent balance: "$balance | tee -a $1.txt
+	echo -e "\tBitcoins sent: "$sentbc  | tee -a $1.txt
+	echo -e "\tSatoshis sent:   "$sent | tee -a $1.txt
+	echo -e "\tBitcoins recv: "$recvbc  | tee -a $1.txt
+	echo -e "\tSatoshis recv:   "$recv | tee -a $1.txt
+	echo -e "\r\n* File $1.txt has been created." | tee -a $1.txt
+	echo -e "* Transactions for $1 has been saved to $1.html." | tee -a $1.txt
+
+	transactions=$(curl -S https://www.blockchain.com/btc/address/$1)
+	echo $transactions > $1.html
+	google-chrome-stable $1.html & 
+	cat $1.txt | zenity --text-info --width=600 --height=350
+
+}
+
+if [ $# -ne 1 ]; then
+	validatebtc=$(zenity --entry --width=300 --title "Bitcoin Address to search for" --text "BTC Address: " --entry-text "" --width=600 2> >(grep -v 'GtkDialog' >&2))
+	if [ ! -z "$validatebtc" ]; then
+		echo "Looking up BTC wallet: $validatebtc"
+		_vars $validatebtc
+	else
+		echo "Usage: bitcoin <address>"
+		exit 1
+	fi
+else
+	echo "Looking up BTC wallet: $1"
+	_vars $1
+	exit 1
+fi

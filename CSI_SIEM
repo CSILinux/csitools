@@ -1,0 +1,7 @@
+#!/bin/bash
+# CSI SIEM (SOC in a Box)
+
+zenity --info --text="CSI SIEM Installer and Launch utility coming soon..." --width=500
+
+
+

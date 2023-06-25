@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+##CSI OSINT by CSI Linux v2021.1.24.5
+##tools@csilinux.com - Jeremy Martin - infosecwriter
+
+#define choices
+opt1="Update CSI Linux"
+opt2="Update CSI Tools"
+opt99="Exit"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+fqdnregex="\b((xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b"
+
+source /opt/csitools/sharedfunctions
+
+Menu () {
+csimenu=$(yad --borders=5 --center --columns=5 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="The CSI Linux Management System" --fontname="Sans Bold 12" --form \
+	--width=800 --height=425 \
+	--image /opt/csitools/Images/Management.jpg \
+	--image-on-top \
+	--field="CSI Linux Mangement":fbtn "CSI_Linux_Management" \
+	--field="General Case Management":fbtn "/opt/csitools/CSI_Case_Management" \
+	--field="Social Media - SOCMINT":fbtn "/opt/csitools/social_media" \
+	--field="Domain Recon":fbtn "/opt/csitools/domains" \
+	--field="Dark Web":fbtn "/opt/csitools/darkweb" \
+	--field="Secure Communications":fbtn "app" \	
+	--field="Computer Forensics":fbtn "app" \
+	--field="Network Forensics":fbtn "websitescreenshot" \
+	--field="Mobile Forensics":fbtn "app" \
+	--field="SIGINT":fbtn "app" \
+	2> >(grep -v 'GtkDialog' >&2)) 
+
+echo "Pick your option to run..."
+_stopwatch; echo "$stopwatch: CSI Case Management Menu." >> ~/Cases/$cases/audit.log
+case $csimenu in			
+	
+	$opt1 ) #Update CSI
+		/opt/csitools/powerup
+		Menu
+	;;
+	
+	$opt2 ) #Update CSI tools
+		key=$(zenity --password --title "Enter you SUDO password." --text "Enter you SUDO password." --width 400)
+		wget csilinux.com/downloads/csitoolsupdate.sh -O - | sh
+		cd /tmp
+		rm csitools*
+		wget https://csilinux.com/downloads/csitools.zip
+		unzip -o -d /opt csitools.zip
+		echo $key | sudo -S sudo chmod +x -R /opt/csitools
+		echo $key | sudo -S sudo chown csi:csi -R /opt/csitools
+		Menu
+	;;
+		
+	$opt99 ) #Exit
+		clear
+		exit
+	;;
+	*) echo "$0: unknown option specified: " >&2
+	Menu
+esac
+}
+
+trap finish EXIT
+
+Menu
+

@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+##CSI Cases Menu Script by CSI Linux v2021.9.5.5
+##tools@csilinux.com - Jeremy Martin - infosecwriter
+
+#define choices
+#opt3="OSINT"
+opt4="Social Media Intellignce (SOCMINT)"
+opt5="Domain and Website OSINT"
+opt6="Dark Web Investigations"
+geo="Geolocation IP/SSID/BSSID"
+vid="Video Capture Tools"
+opt7="Make a Logical copy of a Mobile device"
+opt8="Mount a Forensic Image or Virtual Machine Disk"
+opt14="Edit Document Generator Variables"
+opt15="Document Templates for the Case"
+opt99="Exit"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+fqdnregex="\b((xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b"
+
+source /opt/csitools/sharedfunctions
+export -f _reportgen
+
+
+
+Menu () {
+csimenu=$(zenity --list --title "CSI Case Management Menu" --text "The CSI Case Management System allows you to manage the case or run\ninvestigation tools.  What would you like to do?" --width=350 --height=375 --radiolist \
+	--column "Pick" --column "Option" \
+	TRUE "$opt4" \
+	FALSE "$opt5" \
+	FALSE "$opt6" \
+	FALSE "$geo" \
+	FALSE "$vid" \
+	FALSE "$opt7" \
+	FALSE "$opt8" \
+	FALSE "$opt14" \
+	FALSE "$opt15" \
+	FALSE "$opt99" \
+	2> >(grep -v 'GtkDialog' >&2)) 
+
+echo "Pick your option to run..."
+_stopwatch; echo "$stopwatch: CSI Case Management Menu." >> ~/Cases/$cases/audit.log
+case $csimenu in			
+	
+	
+#	$opt3 ) #OSINT
+#		#Run Tool
+#		xterm -e /opt/csitools/osint $cases
+#		Menu
+#	;;
+	
+	$opt4 ) #SOCMINT
+		#Run Tool
+		xterm -e /opt/csitools/social_media_ng $cases
+		Menu
+	;;
+	
+	$opt5 ) #Domain
+		#Run Tool
+		xterm -e /opt/csitools/domains_ng $cases
+		Menu
+	;;
+	
+	$opt6 ) #Dark Web
+		#Run Tool
+		xterm -e /opt/csitools/darkweb_ng $cases
+		Menu
+	;;
+		
+	$geo ) #Geolocation
+		#Run Tool
+		xterm -e /opt/csitools/geolocation $cases
+		Menu
+	;;
+		
+	$vid ) #Video Downloader
+		#Run Tool
+		xterm -e /opt/csitools/videocapture-GUI $cases
+		Menu
+	;;
+		
+	$opt7 ) #Mobile Device
+		#Run Tool
+		mobileforensics=$(zenity  --list  --title "Pick the device type" --text "What is the OS?" --width=300 --height=125 --radiolist \
+			--column "Choose" --column "Option" \
+			TRUE "Android" \
+			FALSE "iDevice" 2> >(grep -v 'GtkDialog' >&2))
+		case $mobileforensics in			
+	
+			Android ) #Android
+				#Run Tool
+				xterm -e /opt/csitools/androidforensics $cases
+				Menu
+			;;
+			
+			iDevice ) #iDevice
+				#Run Tool
+				xterm -e /opt/csitools/iphoneimaging $cases
+				Menu
+			;;
+
+			*) echo "$0: unknown option specified: " >&2
+			Menu
+		esac			
+	;;
+		
+	$opt8 ) #Disk Image
+		#Run Tool
+		xterm -e /opt/csitools/mountimages $cases
+		Menu
+	;;
+	
+	$opt14 ) #Edit the variables for the Report Generator the Cases folder
+		#Run Tool
+		gedit /opt/csitools/startcsiconfig &
+		gedit ~/Cases/$cases/caseinfo.txt &
+		Menu
+	;;
+		
+	$opt15 ) # Create the Report template
+		#Run Tool
+		/opt/csitools/CSI_Template_Management $cases
+		Menu
+	;;
+	
+
+	$opt99 ) #Exit
+		exit
+	;;
+	*) echo "$0: unknown option specified: " # >&2
+	
+	Menu
+	
+esac
+}
+
+trap finish EXIT
+
+
+
+_Check-Case
+Menu

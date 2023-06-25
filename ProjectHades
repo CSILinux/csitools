@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+## ATII Project Hades - Dark Web Search App - CSI Linux v2022.5.29.1
+##tools@csilinux.com - Jeremy Martin
+
+source /opt/csitools/sharedfunctions
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Advanced ATII Dark Web Search\nThe Hades Project - ATII - followmoneyfightslavery.org\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+UA="CSI Linux ATII Search"
+URL="https://api.aikostek.com/v2/lookup/$atiiq?query=$atiisearch"
+
+Menu() {
+	yad  --borders=10 --window-icon="/opt/csitools/Images/3-headed-dog-in-shield-265x300.png" --title="The Hades Project - ATII - followmoneyfightslavery.org" \
+	--form --center \
+	--image /opt/csitools/Images/3-headed-dog-in-shield-265x300.png --width=300 \
+	--field="Search Crypto Wallets":fbtn "bash -c _atiicw $atiikey" \
+	--field="Search Tor Onion Addresses":fbtn "bash -c _atiioa" \
+	--field="Search Email Addresses":fbtn "bash -c _atiiea" \
+	--field="Search IP Addresses":fbtn "bash -c _atiiip" \
+	--field="Search Hashes":fbtn "bash -c _atiih" \
+	--field="Visit followmoneyfightslavery.org":fbtn "bash -c 'google-chrome-stable https://followmoneyfightslavery.org/hades/'" \
+	--button="Exit:1"
+}
+
+_atiicw() {
+	atiikey=''
+	atiisearch=$(zenity --entry --width=300 --title "ATII Dark Web Search" --text "Enter the Crypto Wallet to Search:" 2> >(grep -v 'GtkDialog' >&2))
+	atiiq="crypto"
+	atiivalue=$(curl "https://api.aikostek.com/v2/lookup/$atiiq?query=$atiisearch" -H "User-Agent: CSI Linux ATII Search" -H  "accept: application/json" -H  "X-Hades-APIKey: $atiikey")
+	filelocation="~/Cases/$cases/Export/DarkWeb/Cryptocurrency"
+	echo "---"
+	echo "ATII Key:          $atiikey"
+	echo "ATII Search Type:  $atiiq"
+	echo "ATII Search Query: $atiisearch"
+	echo $atiivalue | tee ~/Cases/$cases/Export/DarkWeb/Cryptocurrency/atii-search-$atiisearch.json
+	jsonviewatii ~/Cases/$cases/Export/DarkWeb/Cryptocurrency/atii-search-$atiisearch.json | tee ~/Cases/$cases/Export/DarkWeb/Cryptocurrency/atii-search-$atiisearch.txt
+	gedit ~/Cases/$cases/Export/DarkWeb/Cryptocurrency/atii-search-$atiisearch.txt
+}
+
+_atiioa() {
+	atiikey=''
+	atiisearch=$(zenity --entry --width=300 --title "ATII Dark Web Search" --text "Enter the .Onion Address to Search:" 2> >(grep -v 'GtkDialog' >&2))
+	atiiq="onion"
+	atiivalue=$(curl "https://api.aikostek.com/v2/lookup/$atiiq?query=$atiisearch" -H "User-Agent: CSI Linux ATII Search" -H  "accept: application/json" -H  "X-Hades-APIKey: $atiikey")
+	filelocation="~/Cases/$cases/Export/DarkWeb"
+	echo "---"
+	echo "ATII Key:          $atiikey"
+	echo "ATII Search Type:  $atiiq"
+	echo "ATII Search Query: $atiisearch"
+	echo $atiivalue | tee ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.json
+	jsonviewatii ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.json | tee ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.txt
+	gedit ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.txt
+}
+
+_atiiea() {
+	atiikey=''
+	atiisearch=$(zenity --entry --width=300 --title "ATII Dark Web Search" --text "Enter the Email Address to Search:" 2> >(grep -v 'GtkDialog' >&2))
+	atiiq="email"
+	atiivalue=$(curl "https://api.aikostek.com/v2/lookup/$atiiq?query=$atiisearch" -H "User-Agent: CSI Linux ATII Search" -H  "accept: application/json" -H  "X-Hades-APIKey: $atiikey")
+	filelocation="~/Cases/$cases/Export/DarkWeb"
+	echo "---"
+	echo "ATII Key:          $atiikey"
+	echo "ATII Search Type:  $atiiq"
+	echo "ATII Search Query: $atiisearch"
+	echo $atiivalue | tee ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.json
+	jsonviewatii ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.json | tee ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.txt
+	gedit ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.txt
+}
+
+_atiiip() {
+	atiikey=''
+	atiisearch=$(zenity --entry --width=300 --title "ATII Dark Web Search" --text "Enter the IP Address to Search:" 2> >(grep -v 'GtkDialog' >&2))
+	atiiq="ip"
+	atiivalue=$(curl "https://api.aikostek.com/v2/lookup/$atiiq?query=$atiisearch" -H "User-Agent: CSI Linux ATII Search" -H  "accept: application/json" -H  "X-Hades-APIKey: $atiikey")
+	filelocation="~/Cases/$cases/Export/DarkWeb"
+	echo "---"
+	echo "ATII Key:          $atiikey"
+	echo "ATII Search Type:  $atiiq"
+	echo "ATII Search Query: $atiisearch"
+	echo $atiivalue | tee ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.json
+	jsonviewatii ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.json | tee ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.txt
+	gedit ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.txt
+}
+
+_atiih() {
+	atiikey=''
+	atiisearch=$(zenity --entry --width=300 --title "ATII Dark Web Search" --text "Enter the Hash to Search:" 2> >(grep -v 'GtkDialog' >&2))
+	atiiq="Hash"
+	atiivalue=$(curl "https://api.aikostek.com/v2/lookup/$atiiq?query=$atiisearch" -H "User-Agent: CSI Linux ATII Search" -H  "accept: application/json" -H  "X-Hades-APIKey: $atiikey")
+	filelocation="~/Cases/$cases/Export/DarkWeb"
+	echo "---"
+	echo "ATII Key:          $atiikey"
+	echo "ATII Search Type:  $atiiq"
+	echo "ATII Search Query: $atiisearch"
+	echo $atiivalue | tee ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.json
+	jsonviewatii ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.json | tee ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.txt
+	gedit ~/Cases/$cases/Export/DarkWeb/atii-search-$atiisearch.txt
+}
+
+
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _stopwatch StartCase _directip StartCase _atiicw _atiioa _atiiea _atiiip _atiih atiikey
+
+StartCase "$1"
+echo "Case=$cases"
+Menu "$1"

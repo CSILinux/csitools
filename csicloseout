@@ -1,0 +1,5 @@
+#!/bin/bash
+# CSI Investigator startup
+
+gsettings set org.gnome.desktop.background picture-uri ~/Pictures/CSI.jpg
+xfconf-query -c xfce4-desktop -p  /backdrop/screen0/monitorVirtual1/workspace0/last-image -s /home/csi/Pictures/CSI.jpg

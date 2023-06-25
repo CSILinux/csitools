@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+##Social Media Search App from CSI Linux by CSI Linux v2022.8.30.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Social Media Search App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+	yad --borders=10 --height=550 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="Social Media Forensics - SOCMINT" \
+	--form --center \
+	--image /opt/csitools/Images/SOCMINT.png --width=300 \
+	--field="Sock Puppet Generator":fbtn "bash /opt/csitools/sockpuppet $cases" \
+	--field="Username Search":fbtn "bash /opt/csitools/usersearch $cases" \
+	--field="Adult Websites Username Search":fbtn "bash -c _adultusersearch" \
+	--field="Hashtag Search":fbtn "bash -c _hashtag" \
+	--field="Phone Search (Many sites charge)":fbtn "bash -c _phonesearch" \
+	--field="Geolocation (IP/SSID/BSSID Address)":fbtn "bash -c _geolocation" \
+	--field="Cryptocurrency Wallet Lookup":fbtn "bash -c _cryptosearch" \
+	--field="Github User Info":fbtn "bash -c _github" \
+	--field="Github Leaks (Requires Github User URL)":fbtn "bash -c _gitleaks" \
+	--field="Instagram User Info":fbtn "bash -c _instagram" \
+	--field="TikTok User Video Download":fbtn "bash -c _tiktokscraper" \
+	--field="Twitter User Info":fbtn "bash -c _twinfo" \
+	--field="Screenshot a webpage":fbtn "bash -c _CSIWebsiteScreenshot $1" \
+	--field="Spiderfoot (Web Application OSINT tool)":fbtn "bash -c _spiderfoot" \
+	--field="Maltego (GUI Link Analysis Application)":fbtn "bash -c _maltego" \
+	--field="HiddenEye (Social Engineering - Send Link to get location)":fbtn "bash -c _hiddeneye" \
+	--field="FBI Most Wanted":fbtn "bash -c /opt/csitools/wanted" \
+	--button="Exit:1"
+	echo $test
+}
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _adultusersearch _hashtag _phonesearch _cryptosearch _twinfo _spiderfoot _maltego _hiddeneye _stopwatch StartCase _directip StartCase _CSIWebsiteScreenshot _tiktokscraper _github _instagram _geolocation _gitleaks
+
+StartCase "$1"
+echo "Case=$cases"
+Menu

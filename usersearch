@@ -1,0 +1,575 @@
+#!/bin/bash
+# usage ./usersearch.sh casename username
+
+source /opt/csitools/sharedfunctions
+trap 'printf "\n";exit 1' 2
+
+handle=$2
+cases=$1
+StartCase "$cases"
+
+testuser() {
+	printf "\e[1;77m[\e[0m\e[1;92m+\e[0m\e[1;77m] $sitename: \e[0m"
+	check1=$(curl -A "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0" --max-time 5 --connect-timeout 4 -i $sitetest -H "Accept-Language: en" -L -s | grep "$stringtest" ; echo $?)
+	if [[ $userfound == *'1'* ]] ; then 
+		if [[ $check1 == *'1'* ]] ; then 
+			printf "\e[1;93mNot Found!\e[0m\n" 
+		elif [[ $check1 == *'0'* ]]; then 
+			printf "\e[1;92m Found!\e[0m $sitetest\n" $handle
+			printf "$sitetest\n" $handle >> "$filename"
+		fi
+	elif [[ $userfound == *'0'* ]]; then 
+		if [[ $check1 == *'0'* ]] ; then 
+			printf "\e[1;93mNot Found!\e[0m\n" 
+		elif [[ $check1 == *'1'* ]]; then 
+			printf "\e[1;92m Found!\e[0m $sitetest\n" $handle
+			printf "$sitetest\n" $handle >> "$filename"
+		fi
+	fi
+}
+
+
+
+
+_usersearch() {
+	handle=$(zenity --entry --title "User Search" --text "Enter username to search for" 2> >(grep -v 'GtkDialog' >&2))   
+	filename="/home/csi/Cases/$cases/Social Media/Account_Search_$handle.txt"
+	if [ -n "$handle" ]; then
+		echo "0-- List Account to Search For --0" >> ~/Cases/$cases/Social\ Media/Accounts.txt
+		_stopwatch; echo "$stopwatch: Running CSI User Search." >> ~/Cases/$cases/audit.log
+		echo "Sherlock is starting"
+		python3 /opt/sherlock/sherlock $handle --output ~/Cases/$cases/Social\ Media/Account_Search_sherlock_$handle.txt --timeout=10 |tee >(zenity --progress --pulsate --no-cancel --auto-close --text="Please wait...")
+		echo "CSI Linux User Search is done"
+		cat ~/Cases/$cases/Social\ Media/Account_Search_$handle.txt >> ~/Cases/$cases/Social\ Media/Account_Search_2_$handle.txt
+		cat ~/Cases/$cases/Social\ Media/Account_Search_sherlock_$handle.txt >> ~/Cases/$cases/Social\ Media/Account_Search_2_$handle.txt
+		cat ~/Cases/$cases/Social\ Media/Account_Search_2_$handle.txt | sort -u | head -n -1 > ~/Cases/$cases/Social\ Media/Account_Search_$handle.txt && rm ~/Cases/$cases/Social\ Media/Account_Search_2_$handle.txt
+		echo "Possible user accounts filtered and sorted"
+		
+		
+	printf "\n"
+	printf "\e[1;93m    .:.:.\e[0m\e[1;77m CSI Linux Social Media Username Search         \e[0m\e[1;93m.:.:.\e[0m\n"
+	printf "\n"
+	printf "  \e[101m\e[1;77m:: Disclaimer: Developers assume no liability and are not    ::\e[0m\n"
+	printf "  \e[101m\e[1;77m:: responsible for any misuse or damage caused by user...    ::\e[0m\n"
+	printf "  \e[101m\e[1;77m:: Verify findings.  There may be false positives/negatives. ::\e[0m\n"
+	printf "\n"
+	echo "Searching for the Username:  " $handle
+	echo "Saving to the case: " $cases
+	printf "\n"
+
+	if [[ -e $filename ]]; then
+	printf "\e[1;92m[\e[0m\e[1;77m*\e[0m\e[1;92m] Removing previous file:\e[0m\e[1;77m $filename" $filename
+	rm -rf $filename
+	fi
+	printf "\n"
+	printf "\e[1;92m[\e[0m\e[1;77m*\e[0m\e[1;92m] Checking username\e[0m\e[1;77m $handle\e[0m\e[1;92m on: \e[0m\n" $handle
+
+	# Social Media
+	sitename="INSTAGRAM"
+	sitetest="https://www.instagram.com/$handle"
+	stringtest="may be broken"
+	userfound="0"
+	testuser
+
+	sitename="Facebook"
+	sitetest="https://www.facebook.com/$handle"
+	stringtest="not found\|may be broken\|removed"
+	userfound="0"
+	testuser
+
+	sitename="MySpace"
+	sitetest="https://myspace.com/$handle"
+	stringtest="find the page"
+	userfound="0"
+	testuser
+
+	sitename="Twitter"
+	sitetest="https://www.twitter.com/$handle"
+	stringtest="page doesn’t exist"
+	userfound="0"
+	testuser
+
+	sitename="Blogspot"
+	sitetest="https://$handle.blogspot.com"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="Bandcamp"
+	sitetest="https://www.bandcamp.com/$handle"
+	stringtest="Sorry"
+	userfound="0"
+	testuser
+
+	sitename="Redit"
+	sitetest="https://www.reddit.com/user/$handle"
+	stringtest="karma"
+	userfound="1"
+	testuser
+
+	sitename="Wordpress"
+	sitetest="https://$handle.wordpress.com"
+	stringtest="want to register"
+	userfound="0"
+	testuser
+
+	sitename="Pintrest"
+	sitetest="https://www.pinterest.com/$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="Tumblr"
+	sitetest="https://$handle.tumblr.com"
+	stringtest="nothing here"
+	userfound="0"
+	testuser
+
+	sitename="Flickr"
+	sitetest="https://www.flickr.com/people/$handle"
+	stringtest="exist"
+	userfound="0"
+	testuser
+
+	sitename="Disqus"
+	sitetest="https://disqus.com/$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="Medium"
+	sitetest="https://medium.com/@$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="VK"
+	sitetest="https://vk.com/$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="About.Me"
+	sitetest="https://about.me/$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="Flipboard"
+	sitetest="https://flipboard.com/@$handle"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	sitename="SlideShare"
+	sitetest="https://slideshare.net/$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="Scribd"
+	sitetest="https://www.scribd.com/$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="Badoo"
+	sitetest="https://www.badoo.com/en/$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="Patreon"
+	sitetest="https://www.patreon.com/$handle"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	sitename="BitBucket"
+	sitetest="https://bitbucket.org/$handle"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	sitename="Etsy"
+	sitetest="https://www.etsy.com/shop/$handle"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	sitename="Cash.Me"
+	sitetest="https://cash.me/$handle"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	sitename="Behance"
+	sitetest="https://www.behance.net/$handle"
+	stringtest="find that page"
+	userfound="0"
+	testuser
+
+	sitename="GoodReads"
+	sitetest="https://www.goodreads.com/$handle"
+	stringtest="not found"
+	userfound="0"
+	testuser
+
+	sitename="Instructables"
+	sitetest="https://www.instructables.com/member/$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="Keybase"
+	sitetest="https://keybase.io/$handle"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	sitename="Kongregate"
+	sitetest="https://kongregate.com/accounts/$handle"
+	stringtest="was found"
+	userfound="0"
+	testuser
+
+	sitename="LiveJournal"
+	sitetest="https://$handle.livejournal.com"
+	stringtest="Unknown"
+	userfound="0"
+	testuser
+
+	sitename="Dribble"
+	sitetest="https://dribbble.com/$handle"
+	stringtest="HTTP/2 404\|404 Not Found"
+	userfound="0"
+	testuser
+
+	sitename="CodeAcademy"
+	sitetest="https://discuss.codecademy.com/u/$handle/summary"
+	stringtest="HTTP/2 404\|Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Gravatar"
+	sitetest="https://en.gravatar.com/$handle"
+	stringtest="HTTP/2 404\|Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Pastebin"
+	sitetest="https://pastebin.com/u/$handle"
+	stringtest="location: /index"
+	userfound="0"
+	testuser
+
+	sitename="GumRoad"
+	sitetest="https://www.gumroad.com/$handle"
+	stringtest="HTTP/2 404\|Not Found"
+	userfound="0"
+	testuser
+
+	sitename="NewGrounds"
+	sitetest="https://$handle.newgrounds.com"
+	stringtest="HTTP/2 404\|Not Found"
+	userfound="0"
+	testuser
+
+	sitename="WattPad"
+	sitetest="https://www.wattpad.com/user/$handle"
+	stringtest="HTTP/2 404\|Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Canva"
+	sitetest="https://www.canva.com/$handle"
+	stringtest="HTTP/2 404\|Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Trakt.TV"
+	sitetest="https://www.trakt.tv/users/$handle"
+	stringtest="HTTP/2 404\|Not Found"
+	userfound="0"
+	testuser
+
+	sitename="500px"
+	sitetest="https://500px.com/$handle"
+	stringtest="HTTP/2 404\|Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Buzzfeed"
+	sitetest="https://buzzfeed.com/$handle"
+	stringtest="HTTP/2 404\|Not Found"
+	userfound="0"
+	testuser
+
+	sitename="HubPages"
+	sitetest="https://hubpages.com/@$handle"
+	stringtest="HTTP/2 404\|Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Contently"
+	sitetest="https://$handle.contently.com"
+	stringtest="HTTP/2 404\|404 Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Blip.FM"
+	sitetest="https://blip.fm/$handle"
+	stringtest="HTTP/2 404\|404 Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Reverbnation"
+	sitetest="https://www.reverbnation.com/$handle"
+	stringtest="HTTP/2 404\|404 Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Designspiration"
+	sitetest="https://www.designspiration.net/$handle"
+	stringtest="HTTP/2 404\|404 Not Found"
+	userfound="0"
+	testuser
+
+	sitename="ColourLovers"
+	sitetest="https://www.colourlovers.com/lover/$handle"
+	stringtest="Content Removed"
+	userfound="0"
+	testuser
+
+	sitename="Ello"
+	sitetest="https://ello.co/$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	# Communications
+	sitename="BasecampHQ"
+	sitetest="https://$handle.basecamphq.com/login"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="Slack"
+	sitetest="https://$handle.slack.com"
+	stringtest="$handle"
+	userfound="1"
+	testuser
+
+	sitename="Signal"
+	sitetest="https://community.signalusers.org/u/$handle"
+	stringtest="HTTP/2 404\|404 Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Telegram"
+	sitetest="https://telegram.me/$handle"
+	stringtest="you can view and join"
+	userfound="1"
+	testuser
+
+	# Media
+	sitename="YouTub"
+	sitetest="https://www.youtube.com/$handle"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	sitename="Vimeo"
+	sitetest="https://vimeo.com/$handle"
+	stringtest="VimeUhOh"
+	userfound="0"
+	testuser
+
+	sitename="DailyMotion"
+	sitetest="https://www.dailymotion.com/$handle"
+	stringtest="not found"
+	userfound="0"
+	testuser
+
+	sitename="CrunchyRoll"
+	sitetest="https://www.crunchyroll.com/user/$handle"
+	stringtest="not found"
+	userfound="0"
+	testuser
+
+	sitename="SoundCloud"
+	sitetest="https://soundcloud.com/$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="DeviantArt"
+	sitetest="https://$handle.deviantart.com"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	sitename="Spotify"
+	sitetest="https://open.spotify.com/user/$handle"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	sitename="MixCloud"
+	sitetest="https://www.mixcloud.com/$handle"
+	stringtest="404\|Page Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Last.FM"
+	sitetest="https://last.fm/user/$handle"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	# Dating
+
+	# Sales and Purchasing
+	sitename="Ebay"
+	sitetest="https://www.ebay.com/usr/$handle"
+	stringtest="HTTP/2 404\|404 Not Found\|eBay Profile - error"
+	userfound="0"
+	testuser
+
+	sitename="PayPal"
+	sitetest="https://www.paypal.me/$handle"
+	stringtest="NOINDEX,NOFOLLOW,NOARCHIVE"
+	userfound="1"
+	testuser
+
+	sitename="Onlyfans"
+	sitetest="https://onlyfans.com/$handle"
+	stringtest="HTTP/2 302"
+	userfound="0"
+	testuser
+
+	sitename="BitcoinForum"
+	sitetest="https://bitcoinforum.com/profile/$handle"
+	stringtest="error"
+	userfound="0"
+	testuser
+
+	sitename="IFTTT"
+	sitetest="https://www.ifttt.com/p/$handle"
+	stringtest="HTTP/2 404\|404 Not Found"
+	userfound="0"
+	testuser
+
+	sitename="Producthunt"
+	sitetest="https://www.producthunt.com/@$handle"
+	stringtest="likes on Product Hunt"
+	userfound="1"
+	testuser
+
+	# Travel
+	sitename="SkyScanner"
+	sitetest="https://www.skyscanner.com/trip/user/$handle"
+	stringtest="HTTP/2 410"
+	userfound="0"
+	testuser
+
+	sitename="TripAdvisor"
+	sitetest="https://tripadvisor.com/members/$handle"
+	stringtest="HTTP/2 404"
+	userfound="0"
+	testuser
+
+	sitename="TripIt"
+	sitetest="https://www.tripit.com/people/$handle#/profile/basic-info"
+	stringtest="location: https://www.tripit.com/home"
+	userfound="0"
+	testuser
+
+	## Games
+	sitename="Roblox"
+	sitetest="https://www.roblox.com/user.aspx?username=$handle"
+	stringtest="404"
+	userfound="0"
+	testuser
+
+	sitename="SteamCommunity"
+	sitetest="https://steamcommunity.com/id/$handle"
+	stringtest="HTTP2/ 404\|could not be found"
+	userfound="0"
+	testuser
+
+	# Technical
+	sitename="CodeMentor"
+	sitetest="https://www.codementor.io/$handle"
+	stringtest="HTTP/2 404\|404 Not Found"
+	userfound="0"
+	testuser
+
+	sitename="GitHub"
+	sitetest="https://www.github.com/$handle"
+	stringtest="HTTP/2 404\|404"
+	userfound="0"
+	testuser
+
+	sitename="YCombinator"
+	sitetest="https://news.ycombinator.com/user?id=$handle"
+	stringtest="HTTP/2 404\|404\|No such user"
+	userfound="0"
+	testuser
+
+	sitename="SEC.gov Database Search"
+	sitetest="https://www.sec.gov/cgi-bin/browse-edgar?company=$handle&owner=exclude&action=getcompany"
+	stringtest="HTTP/2 404\|404\|No matching companies"
+	userfound="0"
+	testuser
+
+	sitename="Mail-Archive"
+	sitetest="https://www.mail-archive.com/search?l=all&q=$handle"
+	stringtest="HTTP/2 404\|404\|No match"
+	userfound="0"
+	testuser
+
+	sitename="Wikipedia"
+	sitetest="https://www.wikipedia.org/wiki/User:$handle"
+	stringtest="not registered"
+	userfound="0"
+	testuser
+		
+		
+		
+		
+		if zenity --question --text="Would you like to open the findings in a browser?"; then
+			while read links; do 
+			    echo "Opening: $links"; screen -d -m google-chrome-stable $links &
+			done < ~/Cases/$cases/Social\ Media/Account_Search_$handle.txt
+			echo "Please wait for Chrome to open..."
+			echo "Good Old Search Engines..."
+			screen -d -m google-chrome-stable https://www.google.com/search?q=$handle&oq=$handle &
+			screen -d -m google-chrome-stable https://www.bing.com/search?q=$handle&pq=$handle &
+		else
+			echo "Done."
+		fi 
+		# gedit ~/Cases/$cases/Social\ Media/Account_Search_$handle.txt &	
+	else
+		zenity --error --text "No handle entered, exiting" 2> >(grep -v 'GtkDialog' >&2)
+		exit
+	fi
+}
+
+
+
+## Dump Report
+echo "Username: $handle" >> ~/Cases/$cases/Social\ Media/Accounts.txt
+cat ~/Cases/$cases/Social\ Media/Accounts.txt | sort -u > /tmp/acctemp.tmp
+mv /tmp/acctemp.tmp ~/Cases/$cases/Social\ Media/Accounts.txt
+
+
+for (( ; ; ))
+do
+	_usersearch
+done
+
+# Test these sites (probably false positives
+
+echo "Done"
+

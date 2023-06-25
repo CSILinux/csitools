@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+function _getEmails() {
+    wget -q -r -m -l1 - $1 | grep -E -o "\b[a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9.-]+\b" >> emails.txt && gedit emails.txt
+    cat emails.txt
+}
+
+_getEmails $1

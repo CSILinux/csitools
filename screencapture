@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+import -window root $HOME/Cases/$1/Screen\ Capture/$2.png
+
+exit

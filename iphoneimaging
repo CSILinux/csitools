@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+##Script for using the idevicebackup2 to make a logical backup of an iDevice (iPhone, iPad, etc...)
+##CSI Cases Menu Script by CSI Linux v2021.2.14.1
+##tools@csilinux.com - Jeremy Martin - infosecwriter
+
+source /opt/csitools/sharedfunctions
+
+if ! which ideviceinstaller > /dev/null; then
+	echo $key | sudo apt-get install ideviceinstaller -y
+fi
+
+connectidevice() {
+	zenity --question --width=300 --text="Plug in your iPhone and click Yes when it is connected" --ok-label="Yes" --cancel-label="No"
+	case $? in
+		 0)
+			test=$(ideviceinfo | tee iDevice.txt)
+			if [[ "$test" == *"ERROR"* ]]; then
+				echo $test
+				connectidevice
+			fi
+			
+		        ;;
+		 1)
+		        zenity --error --width=200 --text "No was pressed.  Exiting" 2> >(grep -v 'GtkDialog' >&2)
+			exit;;
+		-1)
+		        zenity --error --width=200 --text "Something is off.  Exiting" 2> >(grep -v 'GtkDialog' >&2)
+			exit;;
+	esac
+}
+
+Menu() {
+	echo -n "Plug in your iPhone and press enter:"
+	connectidevice
+
+	cd ~/Cases/$cases
+	echo "Now in the ~/Cases/$cases folder."
+	mkdir iPhone-Image-$timestamp
+	echo "Making the directory iPhone-Image-$timestamp"
+	echo "Attempting to run ideviceinfo"
+	zenity --text-info --title="Device Information" --filename=iDevice.txt
+	devid=$(cat iDevice.txt | grep DeviceID | cut -d" " -f2)
+	timezone=$(cat iDevice.txt | grep DeviceID | cut -d" " -f2)
+	serialnumber=$(cat iDevice.txt | grep SerialNumber | cut -d" " -f2)
+	echo "Attempting to run ideviceinstaller"
+	ideviceinstaller -l | tee $devid-Apps.txt
+	zenity --text-info --title="Installed Apps" --filename=$devid-Apps.txt
+	echo "Imaging device "$devid" with serial number: "$sserialnumber
+	echo "     Timezone: "$timezone
+	echo "Imaging the iDevice now..."
+	mv iDevice.txt $devid-Info.txt
+	idevicebackup2 -d backup --full iPhone-Image-$timestamp
+#	echo "Parsing Image"
+#	idevicebackup2 unback iPhone-Image-$timestamp
+	cd $devid
+	echo "Pulling crash reports"
+	mkdir crashreports
+	echo "Attempting to run idevicecrashreport"
+	idevicecrashreport -d crashreports
+	echo "Done"
+	finish
+}
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+
+StartCase
+Menu
+
+

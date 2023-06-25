@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+##Manage the CSI Tools Case Folder Location
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "WWhere do you  App\n"
+
+#define choices
+opt1="Change your Case folder path (example: external drive)"
+opt99="Exit the Case Folder Manager"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+
+
+_stopwatch() {
+	stopwatch=$(date --rfc-2822)
+}
+
+
+Menu() {
+printf "\nChoose what tool to run\n"
+choice=$(zenity  --list  --title "Social Network Investigation Tool" --text "What do you want to do?" --width=475 --height=400 --radiolist  --column "Choose" --column "Option" FALSE "$opt1" TRUE "$opt99" 2> >(grep -v 'GtkDialog' >&2)) 
+case $choice in		
+	$opt1 ) #Change
+		zenity --question --text="Are you sure, proceed to change the folder?"
+		if [ $? = 0 ]; then
+		    destination=$(zenity --width=475 --title "Pick The New Cases Base Folder " --file-selection  --directory)
+		   /opt/csitools/case_move $destination/Cases
+		else
+		    exit
+		fi
+	
+	;;
+
+	$opt99 ) #Exit
+		exit 1		
+	;;
+	esac
+	Menu
+}
+
+finish() {
+echo "moved"
+
+}
+trap finish EXIT
+
+Menu
+

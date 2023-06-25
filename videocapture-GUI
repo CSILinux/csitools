@@ -1,0 +1,217 @@
+#!/usr/bin/env bash
+##Online Video Capture App from CSI Linux by CSI Linux v2021.11.9.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Online Video Capture App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+	yad --borders=10 --height=250 --window-icon="/opt/csitools/Images/tv.jpg" --title="Online Video and Streaming Capture Tool" \
+	--form --center \
+	--image /opt/csitools/Images/tv.jpg --width=400 \
+	--field="Download Video from a Website (Youtube-dl)":fbtn "bash -c _youtubedl" \
+	--field="Capture Streaming or On-Demand Video (Streamlink [YouTube/M3U8/RTSP/RTMP/etc...])":fbtn "bash -c _streamlink" \
+	--field="Capture IPTV Streams (VLC Recording [M3U8/RTSP/RTMP/etc...])":fbtn "bash -c _m3u8" \
+	--field="Capture/Record Screen (VokoscreenNG)":fbtn "bash -c _voko" \
+	--field="Capture and/or Cast/Stream Screen/Cameras (OBS)":fbtn "bash -c _obs" \
+	--field="Take Snapshot Every 30 Seconds from Video (FFMPEG)":fbtn "bash -c _vid2image" \
+	--field="Convert Video File to MP4 Format (FFMPEG)":fbtn "bash -c _conv" \
+	--button="Exit:1"
+	echo $test
+}
+
+_youtubedl() {
+	if [ -n "$cases" ]; then
+		test=$(zenity --forms --width=400  --title="Video Downloader (YouTube not supported - DMCA)" \
+			--text="Enter target URL of the Video" \
+			--add-entry="Use the entire URL (http(s)://)")
+		url=$(echo $test | cut -f1 -d"|")
+	
+		if [ ! -d "~/Cases/$cases" ]; then
+		   	mkdir ~/Cases/$cases 2>/dev/null
+			cd ~/Cases/$cases/
+		fi 	
+		/opt/csitools/case_env $cases 2>/dev/null
+		mkdir ~/Cases/$cases/Export/Screenshot 2>/dev/null
+		cd ~/Cases/$cases/Videos/
+	else
+	  	zenity --error --width=200 --text "No case entered, using the Cases folder" 
+		exit
+	fi
+	echo "Grabbing a video from $url"
+	if [ -n "$url" ]; then
+		title=`youtube-dl --get-filename -o "%(title)s.mp4" "$url"`
+		youtube-dl "$url" -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio' --merge-output-format mp4 "$url" -o ~/Cases/$cases/Videos/"%(title)s.%(ext)s" -i | zenity --progress --width=500 --pulsate --no-cancel --auto-close --title="Youtube-DL Downloader" --text="Video being saved to ~/Cases/$cases/Videos/" 2> >(grep -v 'GtkDialog' >&2)
+		mediainfo ~/Cases/$cases/Videos/"$title" | tee ~/Cases/$cases/Videos/"$title".meta.log
+		# ffprobe -hide_banner ~/Cases/$cases/Videos/"$title" >> ~/Cases/$cases/Videos/"$title".meta.log
+		sleep 2
+		thunar ~/Cases/$cases/Videos/ >/dev/null 2>&1
+		
+	else
+		zenity --error --text "Missing URL, exiting"
+	   	exit
+	fi 
+
+	_stopwatch; echo "$stopwatch: Grabbing a screenshot from $url" >> ~/Cases/$cases/audit.log
+}
+
+_m3u8() {
+	if [ -n "$cases" ]; then
+		test=$(zenity --forms --width=600  --title="M3U8/RTSP/RTMP Video Streaming (VLC Play and Record)" \
+			--text="Enter target URL of the M3U8." \
+			--add-entry="Use the entire URL (http(s)://)" \
+			--add-entry="Add file name without extension:")
+		url=$(echo $test | cut -f1 -d"|")
+		filename=$(echo $test | cut -f2 -d"|")
+	
+		if [ ! -d "~/Cases/$cases" ]; then
+		   	mkdir ~/Cases/$cases 2>/dev/null
+			cd ~/Cases/$cases/
+		fi 	
+		/opt/csitools/case_env $cases 2>/dev/null
+		mkdir ~/Cases/$cases/Export/Screenshot 2>/dev/null
+		cd ~/Cases/$cases/Videos/
+	else
+	  	zenity --error --width=200 --text "No case entered, using the Cases folder" 2> >(grep -v 'GtkDialog' >&2)
+		exit
+	fi
+	echo "Grabbing a video from $url"
+	if [ -n "$url" ]; then
+		vlc "$url" --sout="#duplicate{dst=std{access=file,mux=mp4,dst='$filename.mp4'},dst=display}"
+		mediainfo $filename.mp4 > $filename.mp4.meta.log
+		ffprobe -hide_banner $filename.mp4>> $filename.mp4.meta.log
+		sleep 2
+		thunar ~/Cases/$cases/Videos/ >/dev/null 2>&1
+		
+	else
+		zenity --error --text "Missing URL, exiting"
+	   	exit
+	fi 
+
+	_stopwatch; echo "$stopwatch: Grabbing a screenshot from $url" >> ~/Cases/$cases/audit.log
+}
+
+
+_streamlink() {
+	if [ -n "$cases" ]; then
+		test=$(zenity --forms --width=600  --title="Video Streams supported - https://streamlink.github.io/plugin_matrix.html" \
+			--text="Enter target URL of the Streaming Page." \
+			--add-entry="Use the entire URL (http(s)://)" \
+			--add-entry="Add file name without extension:")
+		url=$(echo $test | cut -f1 -d"|")
+		filename=$(echo $test | cut -f2 -d"|")
+	
+		if [ ! -d "~/Cases/$cases" ]; then
+		   	mkdir ~/Cases/$cases 2>/dev/null
+			cd ~/Cases/$cases/
+		fi 	
+		/opt/csitools/case_env $cases 2>/dev/null
+		mkdir ~/Cases/$cases/Export/Screenshot 2>/dev/null
+		cd ~/Cases/$cases/Videos/
+	else
+	  	zenity --error --width=200 --text "No case entered, using the Cases folder" 2> >(grep -v 'GtkDialog' >&2)
+		exit
+	fi
+	if ! which streamlink > /dev/null; then
+		echo $key | sudo -S apt install streamlink
+	fi
+	echo "Grabbing a video from $url"
+	if [ -n "$url" ]; then
+		streamlink  $url best -r $filename.mp4
+		mediainfo $filename.mp4 > $filename.mp4.meta.log
+		ffprobe -hide_banner $filename.mp4 >> $filename.mp4.meta.log
+		sleep 2
+		thunar ~/Cases/$cases/Videos/ >/dev/null 2>&1
+	else
+		zenity --error --text "Missing URL, exiting"
+	   	exit
+	fi 
+
+	_stopwatch; echo "$stopwatch: Grabbing a screenshot from $url" >> ~/Cases/$cases/audit.log
+}
+
+_tiktokscraper() {
+	handle=$(zenity --entry --title "TikTok Scraper" --text "Enter username to search for" 2> >(grep -v 'GtkDialog' >&2))   
+	if [ -n "$handle" ]; then
+		echo "0-- Attempting to pull data for $handle --0"
+		_stopwatch; echo "$stopwatch: Running CSI TikTok-Scraper." >> ~/Cases/$cases/audit.log
+		mkdir ~/Cases/$cases/Videos/TikTok
+		tiktok-scraper user $handle -d -n 100 --session sid_tt=dae32131231 --historypath ~/Cases/$cases/Videos/TikTok/ --filepath ~/Cases/$cases/Videos/TikTok/ |tee >(zenity --progress --pulsate --no-cancel --auto-close --text="Please wait...")
+	else
+	  	zenity --error --text "No handle entered, exiting" 2> >(grep -v 'GtkDialog' >&2)
+		exit
+	fi
+}
+
+_voko() {
+	vokoscreenNG
+}
+
+_obs() {
+	if ! which obs > /dev/null; then
+		key=$(zenity --password --title "Enter your SUDO password to start the upgrade." --text "Enter your SUDO password." --width 400)
+		echo $key | sudo -S apt install obs-studio
+	fi
+	obs
+}
+
+_conv() {
+
+	FILE=`zenity --file-selection --title="Select a File to convert to .MP4"`
+	filename=$(basename -- "$FILE")
+	filename="${filename%.*}"
+	cd ~/Cases/$cases/Videos
+	case $? in
+		 0)
+			echo "\"$FILE\" selected."
+			ffmpeg -i "$FILE" "$filename.mp4" |tee >(zenity --progress --pulsate --no-cancel --auto-close --text="Please wait...")
+			;;
+		 1)
+			echo "No file selected.";;
+		-1)
+			echo "An unexpected error has occurred.";;
+	esac
+
+	vlc "~/Cases/$cases/Export/$filename.mp4" &
+
+}
+
+_vid2image() {
+	FILE=`zenity --file-selection --title="Select a video to snapshot"`
+	filename=$(basename -- "$FILE")
+	filename="${filename%.*}"
+	cd ~/Cases/$cases/Videos
+	case $? in
+		 0)
+			echo "\"$FILE\" selected."
+			mkdir $filename
+			ffmpeg -i "$FILE" -r 1/30 $filename/image%d.jpg |tee >(zenity --progress --pulsate --no-cancel --auto-close --text="Please wait...")
+			;;
+		 1)
+			echo "No file selected.";;
+		-1)
+			echo "An unexpected error has occurred.";;
+	esac
+
+}
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+	trap finish EXIT
+fi
+
+export -f _stopwatch StartCase _directip StartCase _streamlink _m3u8 _youtubedl _tiktokscraper _voko _obs _conv Menu _vid2image
+
+StartCase "$1"
+echo "Case=$cases"
+Menu

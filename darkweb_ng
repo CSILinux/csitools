@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+##Dark Web Tools App from CSI Linux by CSI Linux v2022.5.17.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Social Media Search App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+	yad  --borders=10 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="Dark Web Investigations" \
+	--form --center \
+	--image /opt/csitools/Images/tor.png --width=300 \
+	--field="Turn on/off CSI TorVPN (Route all traffic through Tor)":fbtn "bash -c _torvpn" \
+	--field="Turn on/off CSI Gateway with Whonix (Whonix Gateway Required)":fbtn "bash -c _torgateway" \
+	--field="Create or Start your Unique Tor Hidden Service (.onion)":fbtn "xterm -e /opt/csitools/hiddenservice" \
+	--field="Search Tor Search Engines":fbtn "bash -c _onionsearch" \
+	--field="Search the Hades Project":fbtn "bash -c _projecthades" \
+	--field="Exodus Online Wallet (Multiple currencies)":fbtn "xterm -e /opt/csitools/exoduscheck" \
+	--field="Crypto Currency Ledger Search":fbtn "bash -c _cryptosearch" \
+	--field="OnionShare":fbtn "bash -c _onionshare" \
+	--button="Exit:1"
+
+}
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _torvpn _torgateway _torbrowser _onionsearch _cryptosearch _onionshare _stopwatch StartCase _directip StartCase cases _projecthades
+
+StartCase "$1"
+echo "Case=$cases"
+Menu "$1"

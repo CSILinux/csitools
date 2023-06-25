@@ -1,0 +1,18 @@
+##CSI Cases Config by CSI Linux v2021.1.17.1
+##tools@csilinux.com - Jeremy Martin
+
+#define variables
+AgencyName="CSI Linux"
+AgencyAddress1="555 West Something AVE"
+AgencyAddress2="Suite number if any"
+AgencyCountry="US"
+AgencyState="Colorado"
+AgencyCity="Denver"
+AgencyZip="80111"
+AgencyPhone="(555) 555-5555"
+AgencyWebsite="www.csilinux.com"
+AgencyEmail="tools@csilinux.com"
+# AgencyLogo="/opt/csitools/Images/CSI.png"
+AgencyTagline="Investigations done right"
+AgencyClassification="CONFIDENTIAL"
+

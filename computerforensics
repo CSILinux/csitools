@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+##Computer Forensic Tools App from CSI Linux by CSI Linux v2022.8.30.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Computer Forensics App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+	yad  --borders=10 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="Deadbox/Post Mortem Computer Forensics" \
+	--form --center \
+	--image /opt/csitools/Images/Icons/p_05.png --width=300 \
+	--field="Document Templates":fbtn "bash -c _CSI_Template_Management" \
+	--field="Consent to Search Template":fbtn "bash -c _consenttosearch" \
+	--field="Chain of Custody Template":fbtn "bash -c _CoC" \
+	--field="Record the Desktop":fbtn "bash -c _voko" \
+	--field="Forensic Device Imaging":fbtn "bash -c _fimage" \
+	--field="Data Recovery (Bad Sectors) Device Imaging":fbtn "python3 /usr/share/ddrescue-gui/DDRescue_GUI.py" \
+	--field="Mount a Forensic Image":fbtn "xterm -e /opt/csitools/mountimages" \
+	--field="Video Triage (Take Snapshot Every 30 Seconds from Video)":fbtn "bash -c _vid2image" \
+	--field="Forensic Registry EDitor (fred)":fbtn "bash -c /opt/csitools/helper/fredrun" \
+	--field="Password Cracking with John the Ripper":fbtn "bash -c _2john" \
+	--field="Report Template":fbtn "bash -c _report" \
+	--button="Exit:1"
+
+}
+##	--field="Analyze Evidence with Autopsy":fbtn "bash -c _aut" \
+
+_fimage() {
+	bash-wrapper /opt/csitools/helper/guymagerrun
+}
+
+_voko() {
+	vokoscreenNG
+}
+
+_2john() {
+	2john $cases
+}
+
+_vid2image() {
+	FILE=`zenity --file-selection --title="Select a video to snapshot"`
+	filename=$(basename -- "$FILE")
+	filename="${filename%.*}"
+	cd ~/Cases/$cases/Videos
+	case $? in
+		 0)
+			echo "\"$FILE\" selected."
+			mkdir $filename
+			ffmpeg -i "$FILE" -r 1/30 $filename/image%d.jpg |tee >(zenity --progress --pulsate --no-cancel --auto-close --text="Please wait...")
+			;;
+		 1)
+			echo "No file selected.";;
+		-1)
+			echo "An unexpected error has occurred.";;
+	esac
+
+}
+
+_CSI_Template_Management() {
+	/opt/csitools/CSI_Template_Management $cases
+}
+
+_aut() {
+	StartCase $cases |tee >(zenity --progress --pulsate --no-cancel --auto-close --text="Please wait...")
+	if [[ ! -f ~/Cases/$cases/Tools/Autopsy/$cases/$cases.aut ]]; then
+		mkdir ~/Cases/$cases/Tools
+		mkdir ~/Cases/$cases/Tools/Autopsy
+		cd ~/Cases/$cases
+		
+		/opt/autopsy/bin/autopsy --createCase --caseName=$cases --caseBaseDir="/home/csi/Cases/$cases/Tools/Autopsy"
+		mv "~/Cases/$cases/Tools/Autopsy/$cases*" "~/Cases/$cases/Tools/Autopsy/$cases"
+
+		for f in *; do
+   			if [ -d "$f" ]; then
+				echo "$f is a directory"
+				#if [ $f = "Tools" ]; then
+				if [[ $f =~ ^(Tools|Reports|Forensic\ Evidence\ Images)$ ]]; then 
+					echo "Layer 1"
+				else
+					echo "Adding $f as a logical file set in Autopsy"
+					/opt/autopsy/bin/autopsy --caseDir="/home/csi/Cases/$cases/Tools/Autopsy/$cases" --addDataSource --dataSourcePath="/home/csi/Cases/$cases/$f" --runIngest
+				fi
+    			fi
+		done
+	else
+		sleep 3
+		mkdir ~/Cases/$cases/Tools/Autopsy
+		/opt/autopsy/bin/autopsy --createCase --caseName=$cases --caseBaseDir="/home/csi/Cases/$cases/Tools/Autopsy"
+		mv ~/Cases/$cases/Tools/Autopsy/$cases* ~/Cases/$cases/Tools/Autopsy/$cases
+
+	fi
+	/opt/autopsy/bin/autopsy ~/Cases/$cases/Tools/Autopsy/$cases/$cases.aut
+	sleep 60
+
+}
+
+_report() {
+	#Run Tool
+	source /opt/csitools/startcsiconfig
+	source ~/Cases/$cases/caseinfo.txt
+	rm -rf ~/Cases/$cases/Report/*
+	mkdir ~/Cases/$cases/Report
+	cd ~/Cases/$cases/Report
+	template="/home/csi/Documents/Templates/Forensic-investigation-report-template.odt"
+	unzip $template
+	sed -i "s/&lt;Case Type&gt;/$casetype/g" meta.xml 
+	sed -i "s/&lt;Case&gt;/$cases/g" meta.xml 
+	sed -i "s/&lt;Client&gt;/$client/g" meta.xml
+	sed -i "s/&lt;Client Address&gt;/$clientaddy/g" meta.xml
+	sed -i "s/&lt;Client City&gt;/$clientcity/g" meta.xml
+	sed -i "s/&lt;Client State&gt;/$clientstate/g" meta.xml
+	sed -i "s/&lt;Client Zip&gt;/$clientzip/g" meta.xml
+	sed -i "s/&lt;Client Phone&gt;/$clientphone/g" meta.xml
+	sed -i "s/&lt;Suspect&gt;/$suspect/g" meta.xml
+	sed -i "s/&lt;Investigator&gt;/$investigator/g" meta.xml
+	sed -i "s/&lt;Agency Name&gt;/$AgencyName/g" meta.xml
+	sed -i "s/&lt;Agency Address&gt;/$AgencyAddress1/g" meta.xml 
+	sed -i "s/&lt;Agency City&gt;/$AgencyCity/g" meta.xml 
+	sed -i "s/&lt;Agency State&gt;/$AgencyState/g" meta.xml 
+	sed -i "s/&lt;Agency Country&gt;/$AgencyCountry/g" meta.xml 
+	sed -i "s/&lt;Agency Zip&gt;/$AgencyZip/g" meta.xml 
+	sed -i "s/&lt;Agency Phone&gt;/$AgencyPhone/g" meta.xml 
+	sed -i "s/&lt;Agency Email&gt;/$AgencyEmail/g" meta.xml 
+	sed -i "s/&lt;Agency Website&gt;/$AgencyWebsite/g" meta.xml
+	sed -i "s/&lt;Agency Tagline&gt;/$AgencyTagline/g" meta.xml
+	sed -i "s/&lt;Agency Classification&gt;/$AgencyClassification/g" meta.xml
+	cp $AgencyLogo Pictures/1000020100000173000001A8327B8009BAB2AE4D.png
+	zip -r "Report for $cases.odt" *
+	libreoffice "Report for $cases.odt" &
+}
+
+
+
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _stopwatch StartCase _directip StartCase _CoC _consenttosearch _fimage _aut _report _voko _vid2image _2john _CSI_Template_Management
+
+StartCase "$1"
+echo "Case=$cases"
+Menu "$1"

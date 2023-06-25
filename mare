@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+##MAlware Analysis Forensic Tools App from CSI Linux by CSI Linux v2022.8.30.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Computer Forensics App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+	yad  --borders=10 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="Malware Analysis / Reverse Engineering" \
+	--form --center \
+	--image /opt/csitools/Images/Icons/Tex_skill_79.PNG --width=300 \
+	--field="Android (APK) Tool":fbtn "bash -c /opt/csitools/helper/apktoolrun" \
+	--field="Binwalk":fbtn "bash -c /opt/csitools/helper/binwalkrun" \
+	--field="wxHexEditor":fbtn "bash -c /opt/csitools/helper/wxHexEditorrun" \
+	--field="UPX - Ultimate Packer for eXecutables":fbtn "bash -c /opt/csitools/helper/upxrun" \
+	--field="IDA Free 7.7":fbtn "bash -c /opt/idafree/ida64" \
+	--field="Ghidra":fbtn "bash -c /opt/csitools/helper/ghidrarun" \
+	--field="Viper Framework":fbtn "bash -c /opt/csitools/helper/viperrun" \
+	--field="MISP":fbtn "bash -c /opt/csitools/helper/misprun" \
+	--field="Report Template":fbtn "bash -c _report" \
+	--button="Exit:1"
+
+}
+
+
+_report() {
+	#Run Tool
+	source /opt/csitools/startcsiconfig
+	source ~/Cases/$cases/caseinfo.txt
+	rm -rf ~/Cases/$cases/Report/*
+	mkdir ~/Cases/$cases/Report
+	cd ~/Cases/$cases/Report
+	template="/home/csi/Documents/Templates/Forensic-investigation-report-template.odt"
+	unzip $template
+	sed -i "s/&lt;Case Type&gt;/$casetype/g" meta.xml 
+	sed -i "s/&lt;Case&gt;/$cases/g" meta.xml 
+	sed -i "s/&lt;Client&gt;/$client/g" meta.xml
+	sed -i "s/&lt;Client Address&gt;/$clientaddy/g" meta.xml
+	sed -i "s/&lt;Client City&gt;/$clientcity/g" meta.xml
+	sed -i "s/&lt;Client State&gt;/$clientstate/g" meta.xml
+	sed -i "s/&lt;Client Zip&gt;/$clientzip/g" meta.xml
+	sed -i "s/&lt;Client Phone&gt;/$clientphone/g" meta.xml
+	sed -i "s/&lt;Suspect&gt;/$suspect/g" meta.xml
+	sed -i "s/&lt;Investigator&gt;/$investigator/g" meta.xml
+	sed -i "s/&lt;Agency Name&gt;/$AgencyName/g" meta.xml
+	sed -i "s/&lt;Agency Address&gt;/$AgencyAddress1/g" meta.xml 
+	sed -i "s/&lt;Agency City&gt;/$AgencyCity/g" meta.xml 
+	sed -i "s/&lt;Agency State&gt;/$AgencyState/g" meta.xml 
+	sed -i "s/&lt;Agency Country&gt;/$AgencyCountry/g" meta.xml 
+	sed -i "s/&lt;Agency Zip&gt;/$AgencyZip/g" meta.xml 
+	sed -i "s/&lt;Agency Phone&gt;/$AgencyPhone/g" meta.xml 
+	sed -i "s/&lt;Agency Email&gt;/$AgencyEmail/g" meta.xml 
+	sed -i "s/&lt;Agency Website&gt;/$AgencyWebsite/g" meta.xml
+	sed -i "s/&lt;Agency Tagline&gt;/$AgencyTagline/g" meta.xml
+	sed -i "s/&lt;Agency Classification&gt;/$AgencyClassification/g" meta.xml
+	cp $AgencyLogo Pictures/1000020100000173000001A8327B8009BAB2AE4D.png
+	zip -r "Report for $cases.odt" *
+	libreoffice "Report for $cases.odt" &
+}
+
+
+
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _stopwatch StartCase _directip StartCase _CoC _consenttosearch _fimage _aut _report _voko _vid2image _2john
+
+StartCase "$1"
+echo "Case=$cases"
+Menu "$1"

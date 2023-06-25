@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# [[ $# -ne 1 ]] && echo Usage: $0 [CSV_FN] && exit -1
+echo "<b>WARNING!!!</b><br><br>Linux in this search were found on the Dark Web, within the Tor network on hidden services that may contain illegal materials or malicious code.  Investigate at your own risk!<br><br>You also are required to be connected to the Tor networkto be able to follow the links.<br><br>"
+echo "<table>"
+echo "<tr><td><b><h1>Site Name</h1></b></td><td><b><h1>Onion Link</h1></b></td></tr>"
+while read string; 
+do 
+echo "<tr><td>"$(echo $string | cut -f2 -d,)"</td><td><a href="$(echo $string | cut -f3 -d,)" target=\"_blank\">"$(echo $string | cut -f3 -d,)"</a></td></tr>"; done < $1
+
+echo "</table>"
+
+
+
+# cat slave.txt | while read string; do echo "<tr><td>"$(echo $string | cut -f2 -d,)"</td><td><a href='"$(echo $string | cut -f3 -d,)"'>"$(echo $string | cut -f3 -d,)"</a></td></tr>"; done > test.html

@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+## CSI Linux Dradis installer / launcher
+## bash ./dradisrun
+
+if [[ ! -f /opt/dradis-ce/LICENSE.txt ]]; then
+	source ~/.bashrc
+	key=$(zenity --password --title "Enter you SUDO password to start the install." --text "Enter you SUDO password." --width 400)
+	cd /tmp
+	echo "Installing Ruby 2.7.2 for Dradis Requirement"
+	rbenv install 2.7.2 -f
+	cd /opt
+	git clone https://github.com/dradis/dradis-ce.git
+	cd dradis-ce/
+	echo "Entering Dradis"
+	mkdir /usr/lib/dradis-ce
+	echo $key | sudo -S apt install --only-upgrade bundler
+	echo $key | sudo -S gem install bundler
+	echo "Installing Dradis"
+	bundle install --path /usr/lib/dradis-ce/
+	echo "Finishing Dradis Install"
+	./bin/setup
+fi
+cd /opt/dradis-ce/
+echo "Running Dradis"
+bundle exec rails server &
+sleep 5
+google-chrome-stable http://localhost:3000

@@ -1,0 +1,79 @@
+#!/bin/bash
+##CSI Site Recon Script by CSI Linux v2022.2.8.18
+##tools@csilinux.com - Jeremy Martin - infosecwriter
+##This tools helps automate the recon process on IP addresses and Domains
+
+#define choices
+opt1="What is my IP address and what is open?"
+opt2="Get infomration in an IP address"
+opt3="Get infomration in a Domain"
+opt99="Exit"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+fqdnregex="\b((xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b"
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Domain Recon App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+
+
+
+
+Menu () {
+reconsitemenu=$(zenity --list --title "CSI Site Recon Menu" --text "The CSI Site Recon tool allows you to get more information on an IP address or Domain name.  What would you like to do?" --width=350 --height=375 --radiolist \
+	--column "Pick" --column "Option" \
+	TRUE "$opt1" \
+	FALSE "$opt2" \
+	FALSE "$opt3" \
+	FALSE "$opt99" \
+	2> >(grep -v 'GtkDialog' >&2)) 
+
+echo "Pick your option to run..."
+_stopwatch; echo "$stopwatch: CSI Site Recon Menu." >> ~/Cases/$cases/audit.log
+case $reconsitemenu in			
+	
+	$opt1 ) #Option 1
+		site=$(curl ipinfo.io/ip)
+		nmap -A -vv -oX ~/Cases/$case/Export/$site.xml $site
+		
+		Menu
+	;;
+	
+	$opt2 ) #Option 2
+		
+		Menu
+	;;
+
+	$opt3 ) #Option 3
+		
+		Menu
+	;;
+
+	$opt99 ) #Exit
+		clear
+		exit
+	;;
+	*) echo "$0: unknown option specified: " >&2
+	Menu
+esac
+}
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _Sublist3r _directip StartCase _stopwatch _getlinks Menu _metagoofil _httrackcli _CSIWebsiteScreenshot _nmap 
+
+StartCase "$1"
+echo "Case=$cases"
+Menu "$1"

@@ -1,0 +1,8 @@
+cd ~/Cases
+find -maxdepth 1 -type d > caselist.txt
+sed -i 's/.\///g' caselist.txt
+sed -i 's/Archive//g' caselist.txt
+sed -i 's/.\//g' caselist.txt
+cat caselist.txt
+thecaselist=$(zenity --entry --title "List Cases" --text $(sort caselist.txt -u) --text "Pick the file type.")
+echo "The case: $thecaselist"

@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# Script for using building the case folder structure and environment for CSI Linux
+
+timestamp=$(date +%Y-%m-%d:%H:%M)
+timezone=$(date)
+
+BuildCase() {
+	printf "Building the case environment\n"
+	echo "Case created on $timezone" > ~/Cases/$1/audit.log
+	echo "$timestamp: Creating the case for $1" >> ~/Cases/$1/audit.log
+	echo "$timestamp: Exact Date" > ~/Cases/$1/audit.log
+	if [ ! -d "~/Cases/$1" ]; then
+	    (
+		echo "5" ; mkdir ~/Cases/$1 2>/dev/null; cd ~/Cases/$1
+		echo "# Creating Cases folder" >> README.TXT
+		echo "10" ; mkdir Crime\ Scene\ Photos
+		echo "# Creating Crime Scene Photos folder" >> README.TXT
+		echo "15" ; mkdir Forensic\ Evidence\ Images
+		echo "# Creating Forensic Evidence Images Folder" >> README.TXT
+		echo "20" mkdir Network\ Logs
+		echo "# Creating Network Logs folder" >> README.TXT
+	
+		echo "30" ; mkdir Index
+		echo "# Creating Index folder" >> README.TXT
+		echo "35" ; mkdir Report
+		echo "# Creating Report folder" >> README.TXT
+		echo "40" ; mkdir Pictures
+		echo "# Creating Pictures folder" >> README.TXT
+		echo "40" ; mkdir Tools
+		echo "# Creating Tools folder" >> README.TXT
+		echo "45" ; mkdir Temp
+		echo "# Creating Temp folder" >> README.TXT
+		echo "50" ; mkdir Videos
+		echo "# Creating Temp folder" >> README.TXT
+		echo "55" ; mkdir Volatile\ Data
+		echo "# Creating Volitile Data folder" >> README.TXT
+		echo "60" ; mkdir Screen\ Capture
+		echo "# Creating Screen Capture folder" >> README.TXT
+		echo "65" ; mkdir Social\ Media
+		echo "70" ; mkdir Notes
+		echo "# Creating Notes folder" >> README.TXT		
+		echo "25" ; mkdir Export
+		echo "# Creating Export folder" >> README.TXT
+				
+		echo "# Creating Social Media folder" >> README.TXT
+		echo "75" ; mkdir Export/Website\ Info
+		echo "# Creating Website Information folder" >> README.TXT
+		echo "80" ; mkdir Export/DarkWeb
+		echo "# Creating DarkWeb folder" >> README.TXT
+		echo "80" ; mkdir Export/DarkWeb/OnionShare
+		echo "# Creating OnionShare folder" >> README.TXT
+		echo "80" ; mkdir Export/Social\ Media
+		echo "# Creating Social Media folder" >> README.TXT
+		echo "80" ; mkdir Export/Network\ Info
+		echo "# Creating Network Info folder" >> README.TXT
+		echo "80" ; mkdir Export/DarkWeb/Cryptocurrency
+		echo "# Creating Cryptocurrency folder" >> README.TXT		
+		echo "100"
+	    ) |
+	    # Zenity reads the data from the commands in the list above
+	    zenity  --progress \
+		    --title="Setting Up your Case" \
+		    --text="Building Case Structure..." \
+		    --percentage=0 \
+		    --width=400 \
+		    --height=100 \
+		    --auto-close \
+		    --no-cancel
+
+	    echo "This folder has been prebuilt for the case $1" >> README.TXT
+	fi
+	#thunar /home/csi/Cases/$1/Export
+	mkdir ~/Cases/$1/Tools/$2
+	cd ~/Cases/$1 || exit 1
+	mkdir ~/Cases/Archive
+}
+
+finish() {
+	echo "Case Env built"
+}
+trap finish EXIT
+
+BuildCase $1 $2
+

@@ -1,0 +1,147 @@
+#!/bin/bash
+trap 'printf "\n";exit 1' 2
+mkdir ~/Cases/$1 2>/dev/null
+filename=~/Cases/$1/Export/Adult_Account_Search_$2.txt
+
+testuser() {
+	printf "\e[1;77m[\e[0m\e[1;92m+\e[0m\e[1;77m] $sitename: \e[0m"
+	check1=$(curl -s -i $sitetest -H "Accept-Language: en" -L | grep -o "$stringtest" ; echo $?)
+	if [[ $userfound == *'1'* ]] ; then 
+		if [[ $check1 == *'1'* ]] ; then 
+			printf "\e[1;93mNot Found!\e[0m\n" 
+		elif [[ $check1 == *'0'* ]]; then 
+			printf "\e[1;92m Found!\e[0m $sitetest\n" $2
+			printf "$sitetest\n" >> $filename
+		fi
+	elif [[ $userfound == *'0'* ]]; then 
+		if [[ $check1 == *'0'* ]] ; then 
+			printf "\e[1;93mNot Found!\e[0m\n" 
+		elif [[ $check1 == *'1'* ]]; then 
+			printf "\e[1;92m Found!\e[0m $sitetest\n" $2
+			printf "$sitetest\n" >> $filename
+		fi
+	fi
+}
+
+clear
+printf "\n"
+printf "\e[1;93m    .:.:.\e[0m\e[1;77m CSI Linux Adult Username Search - csilinux.org  \e[0m\e[1;93m.:.:.\e[0m\n"
+printf "\n"
+printf "  \e[101m\e[1;77m:: Disclaimer: Developers assume no liability and are not    ::\e[0m\n"
+printf "  \e[101m\e[1;77m:: responsible for any misuse or damage caused by user...    ::\e[0m\n"
+printf "  \e[101m\e[1;77m:: Verify findings.  There may be false positives/negatives. ::\e[0m\n"
+printf "\n"
+echo "Searching for the Username:  " $2
+printf "\n"
+
+if [[ -e $filename ]]; then
+printf "\e[1;92m[\e[0m\e[1;77m*\e[0m\e[1;92m] Removing previous file:\e[0m\e[1;77m %s.txt" $filename
+rm -rf $filename
+fi
+printf "\n"
+printf "\e[1;92m[\e[0m\e[1;77m*\e[0m\e[1;92m] Checking username\e[0m\e[1;77m %s\e[0m\e[1;92m on: \e[0m\n" $2
+
+touch $filename
+
+## Adult Site Check
+## Cam Sites
+sitename="Cam SITE - Chaterbate"
+sitetest="https://chaturbate.com/$2"
+stringtest="Page Not Found"
+userfound="0"
+testuser
+
+sitename="Cam SITE - LiveJasmin"
+sitetest="https://www.livejasmin.com/en/chat-html5/$2"
+stringtest="404"
+userfound="0"
+testuser
+
+sitename="Cam SITE - Epornercams"
+sitetest="https://epornercams.com/cam/$2"
+stringtest="Sorry"
+userfound="0"
+testuser
+
+sitename="Cam SITE - Cam4"
+sitetest="https://www.cam4.com/$2"
+stringtest="not exist"
+userfound="0"
+testuser
+
+sitename="Cam SITE - SpankBang"
+sitetest="https://spankbang.com/live/performer/$2"
+stringtest="not exist"
+userfound="0"
+testuser
+
+## Adult Site Users
+sitename="XXX SITE User - GotPorn"
+sitetest="https://www.gotporn.com/users/$2"
+stringtest="404"
+userfound="0"
+testuser
+
+sitename="XXX SITE User - Motherless"
+sitetest="https://motherless.com/m/$2"
+stringtest="damn!"
+userfound="0"
+testuser
+
+sitename="XXX SITE User - PornHub"
+sitetest="https://www.pornhub.com/model/$2"
+stringtest="Page Not Found"
+userfound="0"
+testuser
+
+sitename="XXX SITE User - SpankBang"
+sitetest="https://spankbang.com/hot/$2"
+stringtest="not exist"
+userfound="0"
+testuser
+
+sitename="XXX SITE User - xHamster"
+sitetest="https://xhamster.com/users/$2"
+stringtest="Personal"
+userfound="1"
+testuser
+
+sitename="XXX SITE User - xVideos"
+sitetest="https://www.xvideos.com/profiles/$2"
+stringtest="404"
+userfound="0"
+testuser
+
+sitename="XXX SITE User - YesPornPlease"
+sitetest="https://yespornplease.com/user/$2"
+stringtest="Error"
+userfound="0"
+testuser
+
+sitename="XXX SITE User - Yuvutu"
+sitetest="http://www.yuvutu.com/$2"
+stringtest="personal"
+userfound="1"
+testuser
+
+## Performers
+sitename="XXX SITE User - WatchMyGF"
+sitetest="https://www.watchmygf.me/channel/$2/"
+stringtest="not found"
+userfound="0"
+testuser
+
+## Dump Report
+echo "Adult site Username: $2" >> ~/Cases/$1/Export/Accounts.txt
+cat ~/Cases/$1/Export/Accounts.txt | sort -u > acctemp.tmp
+mv acctemp.tmp ~/Cases/$1/Export/Accounts.txt
+
+if zenity --question --text="Would you like to open the findings in a browser?"; then
+	while read links; do 
+	    echo "Opening: $links"; screen -d -m google-chrome-stable $links
+	done < $filename
+	echo "Please wait for Chrome to open..."
+else
+	echo "Done."
+fi  
+gedit $filename &

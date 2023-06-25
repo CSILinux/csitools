@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+##Domain Recon Tools App from CSI Linux by CSI Linux v2022.8.30.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Domain Recon App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+	echo "Passed $1"
+	yad --borders=10 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="Domain Recon" \
+	--form --center \
+	--image /opt/csitools/Images/websites.png --width=800 \
+	--field="Gather Domain Information":fbtn "bash -c -v '_Sublist3r $1'" \
+	--field="NMap Domain":fbtn "bash -c '_nmap $1'" \
+	--field="Get Links from a target page":fbtn "bash -c '_getlinks $1'" \
+	--field="Metagoofil":fbtn "bash -c 'metagoofil_GUI $1'" \
+	--field="HTTrack (Auto Mirror)":fbtn "bash -c '_httrackcli $1'" \
+	--field="Web HTTrack (GUI)":fbtn "webhttrack" \
+	--field="CSI Website Screenshot":fbtn "bash -c _CSIWebsiteScreenshot" \
+	--field="GEO Location":fbtn "bash -c _geo" \
+	--button="Exit:1"
+}
+
+_geo() {
+	xterm -e /opt/csitools/geolocation $cases
+}
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _Sublist3r _directip StartCase _stopwatch _getlinks Menu _metagoofil _httrackcli _CSIWebsiteScreenshot _nmap _geo
+
+StartCase "$1"
+echo "Case=$cases"
+Menu "$1"
+

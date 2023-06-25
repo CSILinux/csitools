@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+##CSI Management System by CSI Linux v2022.8.30.1
+##tools@csilinux.com - Jeremy Martin - infosecwriter
+
+source /opt/csitools/sharedfunctions
+source /opt/csitools/startcsiconfig
+version="v2023.01.14.1"
+
+closeout() {
+	exit
+}
+
+if ! which yad > /dev/null; then
+	key=$(zenity --password --title "Enter you SUDO password." --text "Enter you SUDO password." --width 400)
+	echo $key | sudo -S apt-get install yad
+fi
+if ! which wmctrl > /dev/null; then
+	key=$(zenity --password --title "Enter you SUDO password." --text "Enter you SUDO password." --width 400)
+	echo $key | sudo apt-get install wmctrl
+fi
+
+
+
+# wmctrl -r "Terminal" -b add,shaded
+
+rm res1 >/dev/null 2>&1
+rm res2 >/dev/null 2>&1
+rm res3 >/dev/null 2>&1
+rm res4 >/dev/null 2>&1
+rm res5 >/dev/null 2>&1
+
+# /opt/csitools/monitorstats & >/dev/null 2>&1
+echo $version
+
+yad --plug=001 --tabnum=1 --borders=1 --focus-field=1 --columns=1 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="CSI Linux Case Management $version" --form \
+	--width=800 --height=400 \
+	--image /opt/csitools/Images/Management.jpg \
+	--image-on-top \
+	--field="Start a Case":fbtn "/opt/csitools/CSI_Case_ng" \
+	--no-buttons &> res1 &
+yad --plug=001 --tabnum=2 --borders=1 --columns=2 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="The CSI Linux System Management $version" --form \
+	--width=800 --height=400 \
+	--image /opt/csitools/Images/Management.jpg \
+	--image-on-top \
+	--field="CSI Linux Mangement":fbtn "xterm -e /opt/csitools/CSI_Linux_Management" \
+	--field="General Case Management":fbtn "xterm -e /opt/csitools/CSI_Case_Management" \
+	--no-buttons  &> res2 &
+yad --plug=001 --tabnum=3 --borders=1 --columns=4 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="Route your traffic through the Tor network..." --form \
+	--width=800 --height=400 \
+	--image /opt/csitools/Images/Management-Tor.jpg \
+	--image-on-top \
+	--field="CSI TorVPN (All traffic goes throgh Tor)":fbtn "xterm -e /opt/csitools/CSI_TorVPN" \
+	--field="CSI Virtual Appliance Whonix setup (Requires the Whonix Gateway)":fbtn "xterm -e /opt/csitools/CSI_Gateway" \
+	--field="Use Chrome Browser (Only the Browser uses Tor)":fbtn "xterm -e google-chrome-stable --incognito --tor" \
+	--no-buttons  &> res3 &
+yad --plug=001 --tabnum=4 --borders=1 --columns=3 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="CryptoCurrencies" --form \
+	--width=800 --height=400 \
+	--image /opt/csitools/Images/Management-Crypto.jpg \
+	--image-on-top \
+	--field="Exodus Online Wallet (Multiple currencies)":fbtn "xterm -e /opt/csitools/exoduscheck" \
+	--field="CryptoCurrency Ledger Search":fbtn "xterm -e /opt/csitools/cryptosearch" \
+	--no-buttons  &> res4 &
+yad --plug=001 --tabnum=5 --borders=1 --columns=1 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="About CSI Linux" --form \
+	--width=800 --height=400 \
+	--field="":txt </opt/csitools/software.txt \
+	--no-buttons  &> res5 &
+yad --notebook --center --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="CSI Linux Case Management $version" --key=001 --tab="Case Management" --tab="System Management" --tab="Route your traffic through the Tor network..." --tab="CryptoCurrencies"  --tab="About CSI Linux $version" --button="Exit:1"
+
+
+trap closeout EXIT
+
+ipcrm -M 001
+# wmctrl -c "Terminal"
+rm res1
+rm res2
+rm res3
+rm res4
+rm res5

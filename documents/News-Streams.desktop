@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=News
+Comment=Live Stream playlist for OSINT to help you keep up to date on the latest news
+Exec=vlc https://iptv-org.github.io/iptv/categories/news.m3u
+Icon=/opt/csitools/Images/Icons/news.jpg
+Path=
+Terminal=false
+StartupNotify=true

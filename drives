@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+##CSI Mounting by CSI Linux v2021.2.16.5
+##tools@csilinux.com - Jeremy Martin - infosecwriter
+
+mkdir /mnt/StolenProperty
+sudo mkdir /mnt/StolenProperty
+ewfmount StolenProperty.E01  /mnt/StolenProperty/
+sudo ewfmount StolenProperty.E01  /mnt/StolenProperty/
+sudo mkdir /media/StolenProperty
+sudo mount /mnt/StolenProperty/ewf1 /media/StolenProperty -o ro,loop,show_sys_files,streams_interace=windows 
+
+

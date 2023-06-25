@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+#Script for using AFLogical
+
+timestamp=$(date +%Y-%m-%d:%H:%M)
+
+source /opt/csitools/sharedfunctions
+
+connectidevice() {
+	zenity --question --width=300 --text="Unlock the android device, make sure USB Debugging is on, allow the trusted connection" --ok-label="Yes" --cancel-label="No"
+	case $? in
+		 0)
+			test=$(adb devices | cut -d ' ' -f 5); echo $test
+			[ -z "$test" ] && connectidevice || echo $test
+		        ;;
+		 1)
+		        zenity --error --width=200 --text "No was pressed.  Exiting" 2> >(grep -v 'GtkDialog' >&2)
+			exit;;
+		-1)
+		        zenity --error --width=200 --text "Something is off.  Exiting" 2> >(grep -v 'GtkDialog' >&2)
+			exit;;
+	esac
+}
+
+
+
+Menu() {
+	adb kill-server
+	echo "***"
+	echo "*** Not all phones will work.  There are a lot of variables."
+	echo "*** 1.) Phone must be unlocked."
+	echo "*** 2.) USB Debugging turned on."
+	echo "*** 3.) You must trust the connection on the Android  device."
+	cd ~/Cases/$cases/Forensic\ Evidence\ Images
+	adb start-server
+	echo -n "Unlock the android device, make sure USB Debugging is on, allow the trusted connection:" 
+	connectidevice
+	adb backup -apk -shared -all -f Android-Backup-$timestamp.ab
+	java -jar /opt/android-forensics/abe.jar unpack Android-Backup-$timestamp.ab Android-Backup-$timestamp.tar
+
+	mkdir Android-Pull-$timestamp
+	adb kill-server; adb start-server
+	adb install /opt/android-forensics/AFLogical.apk && echo -n "Run AFLogical on your phone and press enter:"; read aflogical
+
+	mkdir Android-Pull-$timestamp
+	adb pull /sdcard/forensics/ Android-Pull-$timestamp | zenity --progress --pulsate --no-cancel --auto-close --title="ADB " --text="Pulling data from the device"
+	adb kill-server
+	clear
+	printf "After 1-2 minutes of gathering log information, press CTRL+C to stop capturing.\n"
+	sleep 10
+		
+	adb start-server && adb logcat | tee Android-Logcat.txt 
+}
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+StartCase
+Menu
+
+
+

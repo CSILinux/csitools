@@ -1,0 +1,202 @@
+#!/usr/bin/env bash
+##Social Media Search App from CSI Linux by CSI Linux v2021.2.12.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Social Media Search App\n"
+
+#define choices
+opt1="Username Search"
+opt2="Phone Search (Many sites charge)"
+opt10="Twitter Information Gathering"
+opt11="Maltego (GUI Link Analysis Application)"
+opt12="Spiderfoot (Web Application OSINT tool)"
+opt13="Bitcoin Wallet Lookup"
+opt19="HiddenEye (Social Engineering - Send Link to get location)"
+opt20="Adult Websites Username Search"
+opt21="Hashtag Search"
+opt99="Exit the Social Media Search App"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+printf "\nChoose what tool to run\n"
+socialmenu=$(zenity  --list  --title "Social Network Investigation Tool" --text "What do you want to do?" --width=475 --height=400 --radiolist  --column "Choose" --column "Option" TRUE "$opt1" FALSE "$opt2" FALSE "$opt10" FALSE "$opt11" FALSE "$opt12" FALSE "$opt13" FALSE "$opt19" FALSE "$opt20"  FALSE "$opt21" FALSE "$opt99" 2> >(grep -v 'GtkDialog' >&2)) 
+case $socialmenu in		
+	$opt1 ) #UserSearch
+		echo "0-- List Account to Search For --0" >> ~/Cases/$cases/Export/Accounts.txt
+		_stopwatch; echo "$stopwatch: Running CSI User Search." >> ~/Cases/$cases/audit.log
+		while true; do
+			_usersearch
+		done		
+	;;
+
+	$opt2 ) #Phone Search
+		echo "0--  List Phone Numbers to Search For --0" >> ~/Cases/$cases/Export/PhoneNumbers.txt
+		_stopwatch; echo "$stopwatch: Running CSI Phone Search." >> ~/Cases/$cases/audit.log
+		while true; do
+			_phonesearch
+		done		
+	;;
+
+	$opt10 ) #twitter infoleak
+		printf "Enter the user name\n"
+		handle=$(zenity --entry --title "User Search" --text "Enter username to search for" 2> >(grep -v 'GtkDialog' >&2)) 
+		_stopwatch; echo "$stopwatch: Running Twitter Information Gathering." >> ~/Cases/$cases/audit.log
+		echo "Searching Twitter...\n"
+		cd /home/csi/Social/twitter/Exporter/
+		python -u /home/csi/python_scripts/twitter.py $handle 2>/dev/null
+		mapfile -n 2 < /home/csi/Social/twitter/Exporter/$handle/twitter.csv
+		if ((${#MAPFILE[@]}>1)); then
+			if [ ! -d "~/Cases/$cases/Export/Twitter_$handle" ]; then
+			   mkdir ~/Cases/$cases/Export/Twitter_$handle 2>/dev/null
+	 		fi
+			mv /home/csi/Social/twitter/Exporter/$handle/* ~/Cases/$cases/Export/Twitter_$handle || rm ~/Cases/$cases/Export/Twitter_$handle
+			cd ~/Cases/$cases/Export/Twitter_$handle
+			rm -rf /home/csi/Social/twitter/Exporter/$handle
+		else
+			rm -rf /home/csi/Social/twitter/Exporter/$handle
+			echo "Nothing found!"
+			sleep 3
+		fi
+		Menu
+	;;
+
+	$opt11 ) #Maltego
+		_stopwatch; echo "$stopwatch: Running Maltego." >> ~/Cases/$cases/audit.log
+		maltego
+		Menu
+	;;
+
+	$opt12 ) #Spiderfoot
+		_stopwatch; echo "$stopwatch: Running Maltego." >> ~/Cases/$cases/audit.log
+		/opt/csitools/spiderfoot
+		Menu
+	;;
+
+	$opt13 ) #Bitcoin
+		_stopwatch; echo "$stopwatch: Running Maltego." >> ~/Cases/$cases/audit.log
+		cd ~/Cases/$cases/Export/
+		/opt/csitools/bitcoin
+		Menu
+	;;
+
+	$opt19 ) #HiddenEye
+		_stopwatch; echo "$stopwatch: Running HiddenEye." >> ~/Cases/$cases/audit.log
+		cd /opt/HiddenEye-Legacy/
+		python3 ./HiddenEye.py
+		Menu
+	;;
+
+	$opt20 ) #Adult UserSearch
+		echo "List Adult Account to Search For:" >> ~/Cases/$cases/Export/Adult-Accounts.txt
+		_stopwatch; echo "$stopwatch: Running Adult User Search." >> ~/Cases/$cases/audit.log
+		while true; do
+			_adultusersearch
+		done		
+	;;
+	
+	$opt21 ) #Hashtag Search
+		printf "Enter the user name\n"
+		handle=$(zenity --entry --title "Hashtag Search" --text "Enter #Hashtag to search for" 2> >(grep -v 'GtkDialog' >&2)) 
+		_stopwatch; echo "$stopwatch:Hashtag Search for $handle." >> ~/Cases/$cases/audit.log
+		cd /home/csi/Cases/$cases/Export
+		mkdir hashtag; cd hashtag
+		mkdir $handle
+		cd $handle
+		printf "Entering the directory: "$(pwd)"\n"
+		google-chrome-stable https://www.tiktok.com/tag/$handle https://www.hashatit.com/hashtags/$handle https://www.youtube.com/hashtag/$handle https://twitter.com/search?q=%23$handle https://www.linkedin.com/feed/hashtag/$handle https://www.hashtags.org/analytics/$handle/ &
+		/opt/csitools/websitegrab.py "https://www.tiktok.com/tag/$handle" 443  | zenity --progress --pulsate --no-cancel --auto-close --text="Attempting to grab a Tiktok screenshot..."
+		/opt/csitools/websitegrab.py "https://www.hashatit.com/hashtags/$handle" 443 | zenity --progress --pulsate --no-cancel --auto-close --text="Attempting to grab a Hashatit screenshot..."
+		/opt/csitools/websitegrab.py "https://www.youtube.com/hashtag/$handle" 443 | zenity --progress --pulsate --no-cancel --auto-close --text="Attempting to grab a YouTube screenshot..." 2> /dev/null
+		/opt/csitools/websitegrab.py "https://twitter.com/search?q=%23$handle" 443 | zenity --progress --pulsate --no-cancel --auto-close --text="Attempting to grab a Twitter screenshot..."
+		/opt/csitools/websitegrab.py "https://www.linkedin.com/feed/hashtag/$handle" 443 | zenity --progress --pulsate --no-cancel --auto-close --text="Attempting to grab a Linkedin screenshot..."
+		/opt/csitools/websitegrab.py "https://www.hashtags.org/analytics/$handle" 443 | zenity --progress --pulsate --no-cancel --auto-close --text="Attempting to grab a Hashtags.org screenshot..."
+		thunar ~/Cases/$cases/Export &
+		Menu
+	;;	
+	
+	$opt99 ) #Exit
+		exit
+	;;
+	esac
+	exit 1
+}
+
+_usersearch() {
+	handle=$(zenity --entry --title "User Search" --text "Enter username to search for" 2> >(grep -v 'GtkDialog' >&2))   
+	if [ -n "$handle" ]; then
+		python3 /opt/sherlock/sherlock $handle --output ~/Cases/$cases/Export/Account_Search_sherlock_$handle.txt
+		/opt/csitools/usersearch $cases $handle
+		cat ~/Cases/$cases/Export/Account_Search_$handle.txt >> ~/Cases/$cases/Export/Account_Search_2$handle.txt
+		cat ~/Cases/$cases/Export/Account_Search_sherlock_$handle.txt >> ~/Cases/$cases/Export/Account_Search_2$handle.txt
+		cat ~/Cases/$cases/Export/Account_Search_2$handle.txt | sort -u | head -n -1 > ~/Cases/$cases/Export/Account_Search_$handle.txt && rm ~/Cases/$cases/Export/Account_Search_2$handle.txt
+		#/opt/csitools/adultusersearch $cases $handle
+		echo "Searching Twitter...\n"
+		cd /home/csi/Social/twitter/Exporter/
+		python -u /home/csi/python_scripts/twitter.py $handle 2>/dev/null
+		mapfile -n 2 < /home/csi/Social/twitter/Exporter/$handle/twitter.csv
+		if ((${#MAPFILE[@]}>1)); then
+			if [ ! -d "~/Cases/$cases/Export/Twitter_$handle" ]; then
+			   mkdir ~/Cases/$cases/Export/Twitter_$handle 2>/dev/null
+	 		fi
+			mv /home/csi/Social/twitter/Exporter/$handle/* ~/Cases/$cases/Export/Twitter_$handle || rm ~/Cases/$cases/Export/Twitter_$handle
+			cd ~/Cases/$cases/Export/Twitter_$handle
+			rm -rf /home/csi/Social/twitter/Exporter/$handle
+		else
+			rm -rf /home/csi/Social/twitter/Exporter/$handle
+			echo "Nothing found!"
+			sleep 3
+		fi
+		instauser=$(zenity --entry --title "Enter Your Instagram Username" --width=475 --text "Enter Your Instagram Username " 2> >(grep -v 'GtkDialog' >&2))   
+		if [ -n "$instauser" ]; then
+			instapass=$(zenity --entry --title "Enter Your Instagram Password"  --width=475 --text "Enter Your Instagram Password:" 2> >(grep -v 'GtkDialog' >&2))   
+			python3  /opt/instaloader/instaloader.py profile $handle --login $instauser --password $instapass --geotags --comments --stories --tagged --dirname-pattern ~/Cases/$cases/Export/Instagram
+		else
+			echo "Unauthenticated Instagram pull"
+			python3 /opt/instaloader/instaloader.py profile $handle --comments --tagged --dirname-pattern ~/Cases/$cases/Export/Instagram
+		fi
+	else
+	  	zenity --error --text "No handle entered, exiting" 2> >(grep -v 'GtkDialog' >&2)
+		thunar /home/csi/Cases/$cases >/dev/null 2>&1
+		Menu; exit
+	fi
+}
+
+_phonesearch() {
+	handle=$(zenity --entry --title "Phone Number Info" --text "Enter Phone Number to search for" 2> >(grep -v 'GtkDialog' >&2))   
+	if [ -n "$handle" ]; then
+		/opt/csitools/phonesearch $cases $handle
+	else
+	  	zenity --error --text "No Phone Number entered, exiting" 2> >(grep -v 'GtkDialog' >&2)
+		thunar /home/csi/Cases/$cases >/dev/null 2>&1
+		Menu; exit
+	fi
+}
+
+_adultusersearch() {
+	handle=$(zenity --entry --title "Adult User Search" --text "Enter Adult Account to search for" 2> >(grep -v 'GtkDialog' >&2))   
+	if [ -n "$handle" ]; then
+		/opt/csitools/adultusersearch $cases $handle
+	else
+	  	zenity --error --text "No handle entered, exiting" 2> >(grep -v 'GtkDialog' >&2)
+		thunar /home/csi/Cases/$cases >/dev/null 2>&1
+		Menu; exit
+	fi
+}
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+StartCase "$1"
+Menu
+

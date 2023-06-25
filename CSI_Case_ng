@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+##Computer Forensic Tools App from CSI Linux by CSI Linux v2022.8.30.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the Computer Forensics App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+
+source /opt/csitools/sharedfunctions
+source ~/Cases/$case/caseinfo.txt
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	_Check-Case
+	echo "The new case is: $cases"
+	trap finish EXIT
+else
+	echo "$1 passed"
+	cases=$1
+fi
+
+Menu() {
+	echo="menu case=$cases"
+	yad  --borders=10 --window-icon="/opt/csitools/Images/CSI-Menu.png" --title="CSI Case Management Menu" \
+	--form --center \
+	--image /opt/csitools/Images/computerforensics.png --width=100 \
+	--field="Open Source Intelligence (OSINT) / Online":fbtn "bash -c _osint" \
+	--field="Dark Web Investigations":fbtn "bash -c _dwi" \
+	--field="Video Capture Tools":fbtn "bash -c _vid" \
+	--field="Make a Logical copy of a Mobile device":fbtn "bash -c _mimage" \
+	--field="Mount a Forensic Image or Virtual Machine Disk":fbtn "xterm -e /opt/csitools/mountimages" \
+	--field="Computer Forensics":fbtn "bash -c _cf" \
+	--field="Network Forensics":fbtn "bash -c _nf" \
+	--field="Malware Analysis":fbtn "bash -c _ma" \
+	--field="Document Templates for the Case":fbtn "bash -c _temp" \
+	--field="Use Encryption":fbtn "bash -c veracrypt" \
+	--button="Exit:1"
+}
+
+_mimage() {
+	mobileforensics=$(zenity  --list  --title "Pick the device type" --text "What is the OS?" --width=300 --height=125 --radiolist \
+		--column "Choose" --column "Option" \
+		TRUE "Android" \
+		FALSE "iDevice" 2> >(grep -v 'GtkDialog' >&2))
+	case $mobileforensics in			
+
+		Android ) #Android
+			#Run Tool
+			xterm -e /opt/csitools/androidforensics $cases
+			Menu
+		;;
+		
+		iDevice ) #iDevice
+			#Run Tool
+			xterm -e /opt/csitools/iphoneimaging $cases
+			Menu
+		;;
+
+		*) echo "$0: unknown option specified: " >&2
+		Menu
+	esac	
+}
+
+_osint() {
+	echo "arg=$1"
+	xterm -e /opt/csitools/osint_ng $cases
+}
+
+_domains() {
+	xterm -e /opt/csitools/domains_ng $cases
+}
+
+_dwi() {
+	xterm -e /opt/csitools/darkweb_ng $cases
+}
+
+_geo() {
+	xterm -e /opt/csitools/geolocation $cases
+}
+
+_vid() {
+	xterm -e /opt/csitools/videocapture-GUI $cases
+}
+
+_dimage() {
+	xterm -e /opt/csitools/mountimages $cases
+}
+
+_cf() {
+	xterm -e /opt/csitools/computerforensics $cases
+}
+
+_nf() {
+	xterm -e /opt/csitools/networkforensics $cases
+}
+
+_ma() {
+	xterm -e /opt/csitools/mare $cases
+}
+
+_temp() {
+	/opt/csitools/CSI_Template_Management $cases
+}
+
+
+
+
+export -f _stopwatch StartCase _directip _mimage _osint _domains _dwi _geo _vid _dimage _temp _cf _nf _ma _Check-Case cases
+
+echo "Case=$cases"
+Menu
+
+

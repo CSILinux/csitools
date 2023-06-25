@@ -1,0 +1,105 @@
+5
+# dep install
+HEAD is now at a66ffe6 Update README.md
+Already up to date.
+Defaulting to user installation because normal site-packages is not writeable
+Collecting aiohttp==3.8.3
+  Using cached aiohttp-3.8.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.0 MB)
+Collecting beautifulsoup4==4.11.1
+  Using cached beautifulsoup4-4.11.1-py3-none-any.whl (128 kB)
+Requirement already satisfied: colorama==0.4.4 in /home/csi/.local/lib/python3.10/site-packages (from -r requirements.txt (line 3)) (0.4.4)
+Requirement already satisfied: Flask==2.1.1 in /home/csi/.local/lib/python3.10/site-packages (from -r requirements.txt (line 4)) (2.1.1)
+Requirement already satisfied: Flask_Cors==3.0.10 in /home/csi/.local/lib/python3.10/site-packages (from -r requirements.txt (line 5)) (3.0.10)
+Requirement already satisfied: requests==2.28.1 in /home/csi/.local/lib/python3.10/site-packages (from -r requirements.txt (line 6)) (2.28.1)
+Requirement already satisfied: gunicorn in /home/csi/.local/lib/python3.10/site-packages (from -r requirements.txt (line 7)) (20.1.0)
+Requirement already satisfied: frozenlist>=1.1.1 in /home/csi/.local/lib/python3.10/site-packages (from aiohttp==3.8.3->-r requirements.txt (line 1)) (1.3.0)
+Requirement already satisfied: charset-normalizer<3.0,>=2.0 in /home/csi/.local/lib/python3.10/site-packages (from aiohttp==3.8.3->-r requirements.txt (line 1)) (2.0.12)
+Requirement already satisfied: multidict<7.0,>=4.5 in /home/csi/.local/lib/python3.10/site-packages (from aiohttp==3.8.3->-r requirements.txt (line 1)) (6.0.2)
+Requirement already satisfied: attrs>=17.3.0 in /usr/lib/python3/dist-packages (from aiohttp==3.8.3->-r requirements.txt (line 1)) (21.2.0)
+Requirement already satisfied: aiosignal>=1.1.2 in /home/csi/.local/lib/python3.10/site-packages (from aiohttp==3.8.3->-r requirements.txt (line 1)) (1.2.0)
+Requirement already satisfied: yarl<2.0,>=1.0 in /home/csi/.local/lib/python3.10/site-packages (from aiohttp==3.8.3->-r requirements.txt (line 1)) (1.7.2)
+Collecting async-timeout<5.0,>=4.0.0a3
+  Using cached async_timeout-4.0.2-py3-none-any.whl (5.8 kB)
+Requirement already satisfied: soupsieve>1.2 in /usr/lib/python3/dist-packages (from beautifulsoup4==4.11.1->-r requirements.txt (line 2)) (2.3.1)
+Requirement already satisfied: Werkzeug>=2.0 in /home/csi/.local/lib/python3.10/site-packages (from Flask==2.1.1->-r requirements.txt (line 4)) (2.0.3)
+Requirement already satisfied: click>=8.0 in /home/csi/.local/lib/python3.10/site-packages (from Flask==2.1.1->-r requirements.txt (line 4)) (8.1.3)
+Requirement already satisfied: Jinja2>=3.0 in /usr/local/lib/python3.10/dist-packages (from Flask==2.1.1->-r requirements.txt (line 4)) (3.1.2)
+Requirement already satisfied: itsdangerous>=2.0 in /usr/lib/python3/dist-packages (from Flask==2.1.1->-r requirements.txt (line 4)) (2.1.0)
+Requirement already satisfied: Six in /usr/lib/python3/dist-packages (from Flask_Cors==3.0.10->-r requirements.txt (line 5)) (1.16.0)
+Requirement already satisfied: idna<4,>=2.5 in /usr/lib/python3/dist-packages (from requests==2.28.1->-r requirements.txt (line 6)) (3.3)
+Requirement already satisfied: certifi>=2017.4.17 in /home/csi/.local/lib/python3.10/site-packages (from requests==2.28.1->-r requirements.txt (line 6)) (2021.10.8)
+Requirement already satisfied: urllib3<1.27,>=1.21.1 in /home/csi/.local/lib/python3.10/site-packages (from requests==2.28.1->-r requirements.txt (line 6)) (1.26.9)
+Requirement already satisfied: setuptools>=3.0 in /home/csi/.local/lib/python3.10/site-packages (from gunicorn->-r requirements.txt (line 7)) (57.0.0)
+Requirement already satisfied: MarkupSafe>=2.0 in /usr/lib/python3/dist-packages (from Jinja2>=3.0->Flask==2.1.1->-r requirements.txt (line 4)) (2.0.1)
+Installing collected packages: beautifulsoup4, async-timeout, aiohttp
+  Attempting uninstall: beautifulsoup4
+    Found existing installation: beautifulsoup4 4.10.0
+    Uninstalling beautifulsoup4-4.10.0:
+      Successfully uninstalled beautifulsoup4-4.10.0
+  Attempting uninstall: async-timeout
+    Found existing installation: async-timeout 3.0.1
+    Uninstalling async-timeout-3.0.1:
+      Successfully uninstalled async-timeout-3.0.1
+  Attempting uninstall: aiohttp
+    Found existing installation: aiohttp 3.7.0
+    Uninstalling aiohttp-3.7.0:
+      Successfully uninstalled aiohttp-3.7.0
+Successfully installed aiohttp-3.8.3 async-timeout-4.0.2 beautifulsoup4-4.11.1
+HEAD is now at 815a31e GooHak by @xer0dayz - https://sn1persecurity.com
+Already up to date.
+53
+# Installing dnslib
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: dnslib in /home/csi/.local/lib/python3.10/site-packages (0.9.21)
+54
+# Installing icmplib
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: icmplib in /home/csi/.local/lib/python3.10/site-packages (3.0.3)
+55
+# Installing passwordmeter
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: passwordmeter in /home/csi/.local/lib/python3.10/site-packages (0.1.8)
+Requirement already satisfied: asset>=0.6.3 in /home/csi/.local/lib/python3.10/site-packages (from passwordmeter) (0.6.13)
+Requirement already satisfied: six>=1.10.0 in /usr/lib/python3/dist-packages (from asset>=0.6.3->passwordmeter) (1.16.0)
+Requirement already satisfied: aadict>=0.2.2 in /home/csi/.local/lib/python3.10/site-packages (from asset>=0.6.3->passwordmeter) (0.2.3)
+Requirement already satisfied: globre>=0.1.5 in /home/csi/.local/lib/python3.10/site-packages (from asset>=0.6.3->passwordmeter) (0.1.5)
+57
+# Installing image
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: image in /home/csi/.local/lib/python3.10/site-packages (1.5.33)
+Requirement already satisfied: six in /usr/lib/python3/dist-packages (from image) (1.16.0)
+Requirement already satisfied: django in /home/csi/.local/lib/python3.10/site-packages (from image) (4.1.1)
+Requirement already satisfied: pillow in /usr/local/lib/python3.10/dist-packages (from image) (9.3.0)
+Requirement already satisfied: sqlparse>=0.2.2 in /home/csi/.local/lib/python3.10/site-packages (from django->image) (0.4.3)
+Requirement already satisfied: asgiref<4,>=3.5.2 in /home/csi/.local/lib/python3.10/site-packages (from django->image) (3.5.2)
+80
+Clearing logs
+
+Clearing /var/log/Xorg.0.log ...
+Clearing /var/log/Xorg.0.log.old ...
+Clearing /var/log/alternatives.log ...
+Clearing /var/log/apache2 ...
+Clearing /var/log/apport.log ...
+Clearing /var/log/apport.log.1 ...
+Clearing /var/log/apt ...
+Clearing /var/log/boot.log ...
+Clearing /var/log/boot.log.1 ...
+Clearing /var/log/btmp ...
+Clearing /var/log/btmp.1 ...
+Clearing /var/log/dpkg.log ...
+Clearing /var/log/dump1090-mutability.log ...
+Clearing /var/log/gpu-manager.log ...
+Clearing /var/log/lastlog ...
+Clearing /var/log/libvirt ...
+Clearing /var/log/lighttpd ...
+Clearing /var/log/macchanger.log ...
+Clearing /var/log/preload.log ...
+Clearing /var/log/private ...
+Clearing /var/log/samba ...
+Clearing /var/log/slim.log ...
+Clearing /var/log/ubuntu-advantage-timer.log ...
+Clearing /var/log/wtmp ...
+90
+# cleaning up
+100
+# Powerup is complete...

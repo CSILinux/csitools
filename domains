@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+##Domain Interact Menu Script by CSI Linux v2021.1.18.1
+##tools@csilinux.com - Jeremy Martin
+
+#define choices
+#opt1="Domain Gatherer"
+opt2="Sublist3r (Brute Force)"
+opt3="TheHarvester"
+opt4="\"De-Cloud\" a server"
+opt5="Get Links from a target page"
+opt7="Metagoofil"
+opt8="HTTrack (Auto Mirror)"
+opt9="Web HTTrack (GUI)"
+opt10="CSI Website Screenshot"
+opt99="Exit"
+closecase=$(date +%Y%m%d%H%M)
+fqdnregex="\b((xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b"
+
+source /opt/csitools/sharedfunctions
+
+Menu () {
+domainmenu=$(zenity --list  --title "Domain Interrogation Tool" --text "What do you want to do?" --width=350 --height=350 --radiolist --column "Pick" --column "Option" FALSE "$opt2" FALSE "$opt3" FALSE "$opt4" FALSE "$opt5" FALSE "$opt7" FALSE "$opt8" FALSE "$opt9" FALSE "$opt10" FALSE "$opt99" 2> >(grep -v 'GtkDialog' >&2)) 
+echo "Pick your option to run..."
+_stopwatch; echo "$stopwatch: Running CSI Domain OSINT." >> ~/Cases/$cases/audit.log
+case $domainmenu in
+			
+	$opt1 ) #Domain autograb
+		;;
+
+	$opt2 ) #Sublist3r
+		domain=$(zenity --entry --width=300 --title "Sublist3r" --text "Enter target domain name" --entry-text "" 2> >(grep -v 'GtkDialog' >&2))
+		if [ ! -z "$domain" ]; then
+			_stopwatch; echo "$stopwatch: Running Sublist3r with bruteforce option." >> ~/Cases/$cases/audit.log
+			#verify legit domain
+			if [[ $domain =~ $fqdnregex ]]; then
+				mkdir ~/Cases/$cases/Export/$domain
+				#Run Tool
+				cd /opt/Sublist3r
+				python3 -u ./sublist3r.py -d $domain -v -o ~/Cases/$cases/Export/$domain/sublist3r-b_$domain.txt && gedit ~/Cases/$cases/Export/$domain/sublist3r-b_$domain.txt &
+				thunar /home/csi/Cases/$cases/Export/$domain >/dev/null 2>&1
+				sed -i 's/<BR>/\n/' ~/Cases/$cases/Export/$domain/sublist3r-b_$domain.txt
+				FILE=~/Cases/$cases/Export/$domain/tmp-$domain.txt
+				if test -f "$FILE"; then
+					cat ~/Cases/$cases/Export/$domain/sublist3r-b_$domain.txt | sort -u | tee -a ~/Cases/$cases/Export/$domain/tmp-$domain.txt
+					cat ~/Cases/$cases/Export/$domain/tmp-$domain.txt | sort -u > /tmp/tmp.txt
+					cat /tmp/tmp.txt > ~/Cases/$cases/Export/$domain/tmp-$domain.txt 
+					rm /tmp/tmp.txt
+				else
+					cat ~/Cases/$cases/Export/$domain/sublist3r-b_$domain.txt | sort -u | tee ~/Cases/$cases/Export/$domain/tmp-$domain.txt
+				fi
+				if zenity --question --text="Would you like to open the findings in a browser?"; then
+					while read links; do 
+					    echo "Opening: $links"; screen -d -m google-chrome-stable $links
+					done < $FILE
+					echo "Please wait for Chrome to open..."
+				else
+					echo "Done."
+				fi 
+
+			else
+				zenity --error --width=300 --text "Doesn't appear to be a legitimate domain, exiting!" 2> >(grep -v 'GtkDialog' >&2)
+				exit
+ 			fi
+		fi
+		Menu
+	;;
+
+	$opt3 ) #TheHarvester
+		domain=$(zenity --entry --title "TheHarvester" --text "Enter target domain name or username" --entry-text "" 2> >(grep -v 'GtkDialog' >&2))
+		if [ ! -z "$domain" ]; then
+			_stopwatch; echo "$stopwatch: Running theHaarvester." >> ~/Cases/$cases/audit.log
+			mkdir ~/Cases/$cases/Export/$domain
+			#Run Tool
+			cd /opt/theHarvester
+			./theHarvester.py -d $domain -b all -f ~/Cases/$cases/Export/$domain/$timestamp-theharvester-$domain.html
+			if [ -f ~/Cases/$cases/Export/$timestamp-theharvester-$domain.html  ]; then
+				screen -d -m google-chrome-stable ~/Cases/$cases/Export/$timestamp-theharvester-$domain.html	
+			fi	
+		fi	
+	;;
+
+	$opt4 ) #De-Cloud
+		domain=$(zenity --entry --width=300 --title "De-Cloud the domain and find IP" --text "Enter target domain name" --entry-text "" 2> >(grep -v 'GtkDialog' >&2))
+		if [ ! -z "$domain" ]; then
+			_stopwatch; echo "$stopwatch: Running CSI De-Cloud analysis." >> ~/Cases/$cases/audit.log
+			mkdir ~/Cases/$cases/Export/$domain
+			#Run Tool
+			cd /opt/csitools
+			./decloud $domain | tee ~/Cases/$cases/Export/$domain/decloud-$domain.txt
+			filename=~/Cases/$cases/Export/$domain/decloud-$domain.txt
+			
+			FILE=~/Cases/$cases/Export/$domain/tmp-$domain.txt
+			if test -f "$FILE"; then
+				cat ~/Cases/$cases/Export/$domain/decloud-$domain.txt | grep "Checking" | cut -d" " -f4 | sed 's/<BR>/\n/' | sort -u | tee -a ~/Cases/$cases/Export/$domain/tmp-$domain.txt
+				cat ~/Cases/$cases/Export/$domain/tmp-$domain.txt | sed 's/<BR>/\n/' | sort -u > /tmp/tmp.txt
+				cat /tmp/tmp.txt > ~/Cases/$cases/Export/$domain/tmp-$domain.txt 
+				rm /tmp/tmp.txt	
+			else
+				cat ~/Cases/$cases/Export/$domain/decloud-$domain.txt | grep "Checking" | cut -d" " -f4 | sed 's/<BR>/\n/' | sort -u | tee ~/Cases/$cases/Export/$domain/tmp-$domain.txt
+			fi
+			gedit ~/Cases/$cases/Export/$domain/tmp-$domain.txt &		
+			if zenity --question --text="Would you like to open the findings in a browser?"; then
+				while read links; do 
+				    echo "Opening: $links"; screen -d -m google-chrome-stable $links
+				done < $FILE
+				echo "Please wait for Chrome to open..."
+			else
+				echo "Done."
+			fi 
+		fi
+		Menu		
+	;;
+
+	$opt5 ) #Get Links
+		domain=$(zenity --entry --width=300 --title "Get Links from a webpage." --text "Enter target domain name" --entry-text "" 2> >(grep -v 'GtkDialog' >&2))
+		if [ ! -z "$domain" ]; then
+			_stopwatch; echo "$stopwatch: Running CSI Website Link Extractor." >> ~/Cases/$cases/audit.log
+			mkdir ~/Cases/$cases/Export/$domain
+			#Run Tool
+			cd /opt/csitools
+			./getlinks $domain | tee ~/Cases/$cases/Export/$domain/site-links-$domain.txt && gedit ~/Cases/$cases/Export/$domain/site-links-$domain.txt &
+		fi
+		Menu		
+	;;
+
+	$opt7 ) #Metagoofil
+		domain=$(zenity --entry --title "Metagoofil" --text "Enter target domain name or username" --entry-text "" 2> >(grep -v 'GtkDialog' >&2))
+		_stopwatch; echo "$stopwatch: Running Metagoofil." >> ~/Cases/$cases/audit.log
+		mkdir ~/Cases/$cases/Export/$domain 2>/dev/null
+		python /opt/metagoofil/metagoofil.py -d $domain -t pdf,doc,xls,ppt,odp,ods,docx,xlsx,pptx -l 500 -n 500 -o ~/Cases/$cases/Export/$domain/ -f ~/Cases/$cases/Export/$domain/$domain.html
+		screen -d -m google-chrome-stable ~/Cases/$cases/Export/$domain/$domain.html
+		Menu
+	;;
+
+	$opt8 ) #CLI HTTrack
+		domain=$(zenity --entry --title "HTTrack CLI" --text "Enter target domain" --entry-text "" 2> >(grep -v 'GtkDialog' >&2))
+		_stopwatch; echo "$stopwatch: Running HHTrack website cloning utility." >> ~/Cases/$cases/audit.log
+		domaintarget=$(echo $domain | sed 's~http[s]*://~~g')
+		mkdir ~/Cases/$cases/Export/$domaintarget 2>/dev/null
+		httrack $domain -O ~/Cases/$cases/Export/$domaintarget/mirror
+		zip -r ~/Cases/$cases/Export/$domaintarget/$domaintarget.zip ~/Cases/$cases/Export/$domaintarget/
+		cd ~/Cases/$cases/Export/$domaintarget/
+		find -type f -exec md5sum '{}' \; > ~/Cases/$cases/Export/$domaintarget/$domaintarget.zip.md5
+		sleep 3
+		screen -d -m google-chrome-stable  ~/Cases/$cases/Export/$domaintarget/mirror/index.html
+		Menu
+	;;
+
+	$opt9 ) #Web HTTrack
+		_stopwatch; echo "$stopwatch: Running Web HTTrack website cloning utility." >> ~/Cases/$cases/audit.log
+		webhttrack >/dev/null 2>&1
+	;;
+
+	$opt10 ) #CSI Website Screenshot
+		#define choices
+		_stopwatch; echo "$stopwatch: Running CSI Website Screenshotab." >> ~/Cases/$cases/audit.log
+		/opt/csitools/websitescreenshot
+		Menu
+	;;
+
+	$opt99 ) #Exit
+		exit
+	;;
+	*) echo "$0: unknown option specified: " >&2
+esac
+}
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+
+StartCase "$1"
+Menu
+

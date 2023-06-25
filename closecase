@@ -1,0 +1,4 @@
+#!/bin/sh
+#Close case by hashing and archiving files
+
+zip -r ~/Cases/$cases/$1/$1.zip ~/Cases/$1/ && md5sum ~/Cases/$cases/$1/$1.zip | tee ~/Cases/$cases/$1/$1.md5

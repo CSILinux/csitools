@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+##WiFi Geolocation App from CSI Linux by CSI Linux v2021.5.28.1
+##tools@csilinux.com - Jeremy Martin
+
+red=`tput setaf 1`
+reset=`tput sgr0`
+printf "Welcome to the WiFi Geolocation App\n"
+timestamp=$(date +%Y-%m-%d:%H:%M)
+closecase=$(date +%Y%m%d%H%M)
+reset=`tput sgr0`
+
+
+opt1="SSID - Name of Wireledd Access Point.  Example:linksys"
+opt2="BSSID - MAC Address.  Example:42:42:42:42:42:42"
+
+source /opt/csitools/sharedfunctions
+
+Menu() {
+	socialmenu=$(zenity  --list  --title "Welcome to the WiFi Geolocation App" --text "What do you want to do?" --width=475 --height="100" --radiolist  --column "Choose" --column "Option" TRUE "$opt1" FALSE "$opt2" 2> >(grep -v 'GtkDialog' >&2)) 
+	
+	case $socialmenu in		
+		$opt1 ) #SSID
+			Target=$(zenity --entry --title "Access Point Name" --text "Enter SSID of WiFi Access Point to Search\n (MAC search will come soon)" 2> >(grep -v 'GtkDialog' >&2)) 
+			curl -i -H 'Accept:application/json' -u $wigle1:$wigle2 --basic https://api.wigle.net/api/v2/network/search?ssid=$Target | tee /home/csi/Cases/$cases/Export/WiFi-Geolocation-$Target.txt
+			gedit /home/csi/Cases/$cases/Export/WiFi-Geolocation-$Target.txt			
+		;;
+
+		$opt2 ) #BSSID
+			Target=$(zenity --entry --title "MAC Address Name" --text "Enter BSSID of WiFi Access Point to Search\n (MAC search will come soon)" 2> >(grep -v 'GtkDialog' >&2)) 
+			curl -i -H 'Accept:application/json' -u $wigle1:$wigle2 --basic https://api.wigle.net/api/v2/network/search?netid=$Target | tee /home/csi/Cases/$cases/Export/WiFi-Geolocation-$Target.txt	
+			gedit /home/csi/Cases/$cases/Export/WiFi-Geolocation-$Target.txt	
+		;;
+		esac
+		exit 1
+}
+
+echo ?$
+
+
+if [ -z "$1" ]
+then
+	echo "Fresh Run"
+	trap finish EXIT
+else
+	echo "$1 passed"
+fi
+
+export -f _usersearch
+
+StartCase "$1"
+echo "Case=$cases"
+Menu

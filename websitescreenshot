@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+##CSI Website Screenshot Tool by CSI Linux v2021.2.12.1
+##tools@csilinux.com - Jeremy Martin
+
+source /opt/csitools/sharedfunctions
+
+screengrab() {
+
+	test=$(zenity --forms --title="Website Screenshot Tool" --text="Enter the URL, Port, and Case name" --add-entry="URL (http(s)://")
+	url=$(echo $test | cut -f1 -d"|")
+	filename=$( echo $url | cut -d"/" -f3)
+	if [ -n "$cases" ]; then
+		if [ ! -d "~/Cases/$cases" ]; then
+		   	mkdir ~/Cases/$cases 2>/dev/null
+			cd ~/Cases/$cases/
+		fi 	
+		/opt/csitools/case_env $cases 2>/dev/null
+		mkdir ~/Cases/$cases/Export/Website\ Info/Screenshot 2>/dev/null
+		cd ~/Cases/$cases/Export/Website\ Info/Screenshot
+	else
+	  	zenity --error --width=200 --text "No case entered, using the Cases folder" 2> >(grep -v 'GtkDialog' >&2)
+		cd ~/Cases
+	fi
+	echo "Grabbing a screenshot from $url"
+	_stopwatch; echo "$stopwatch: Grabbing a screenshot from $url:$port" >> ~/Cases/$cases/audit.log
+	cutycapt --url=$url --out=/home/csi/Cases/$cases/Export/Website\ Info/Screenshot/$filename.png 
+	thunar ~/Cases/$cases/Export/Website\ Info/Screenshot
+}
+StartCase "$1"
+echo "Case=$cases"
+screengrab
+

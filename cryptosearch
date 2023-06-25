@@ -1,0 +1,53 @@
+#!/bin/bash
+# getbtcaddr--Given a crypto currency address, reports useful information
+# requires wcalc
+# requires Internet access
+
+
+# if ! which wcalc > /dev/null; then
+# 	key=$(zenity --password --title "Enter you SUDO password." --text "Enter you SUDO password." --width 400)
+# 	echo $key | sudo -S apt-get install wcalc
+# fi
+
+_vars() {
+#	base_url="https://blockchain.info/q/"
+#	balance=$(curl -s $base_url"addressbalance/"$1)
+#	recv=$(curl -s $base_url"getreceivedbyaddress/"$1)
+#	sent=$(curl -s $base_url"getsentbyaddress/"$1)
+#	first_made=$(curl -s $base_url"addressfirstseen/"$1)
+#	recvbc=$(echo $recv / 10000000 | wcalc)
+#	sentbc=$(echo $sent / 10000000 | wcalc)
+#	echo "Details for address $1" | tee $1.txt
+#	echo "The values are shown as Satoshis (1 Satoshis = .00000001 BTC)" | tee -a $1.txt
+#	echo -e "\tFirst seen:      "$(date -d @$first_made) | tee -a $1.txt
+#	echo -e "\tCurrent balance: "$balance | tee -a $1.txt
+#	echo -e "\tBitcoins sent: "$sentbc  | tee -a $1.txt
+#	echo -e "\tSatoshis sent:   "$sent | tee -a $1.txt
+#	echo -e "\tBitcoins recv: "$recvbc  | tee -a $1.txt
+#	echo -e "\tSatoshis recv:   "$recv | tee -a $1.txt
+#	echo -e "\r\n* File $1.txt has been created." | tee -a $1.txt
+#	echo -e "* Transactions for $1 has been saved to $1.html." | tee -a $1.txt
+
+	transactions=$(curl -S -L https://blockchair.com/search?q=$1)
+	echo $transactions > $1.html
+	google-chrome-stable https://blockchair.com/search?q=$1 & # $1.html & 
+	# cat $1.txt | zenity --text-info --width=600 --height=350
+
+}
+
+
+
+if [ $# -ne 1 ]; then
+	validatebtc=$(zenity --entry --width=300 --title "Crypto Address search" --text "Bitcoin, Ethereum, Ripple, Litecoin, Bitcoin Cash, Cardano, Stellar, Bitcoin SV, EOS, Monero, Tezos, Dash, Zcash, Dogecoin, Bitcoin ABC, Mixin, or Groestlcoin Address: " --entry-text "" --width=600 2> >(grep -v 'GtkDialog' >&2))
+	if [ ! -z "$validatebtc" ]; then
+		echo "Looking up Crypto wallet: $validatebtc"
+		_vars $validatebtc
+	else
+		echo "Usage: cryptosearch <address>"
+		exit 1
+	fi
+else
+	echo "Looking up BTC wallet: $1"
+	_vars $1
+	exit 1
+fi
